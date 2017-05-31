@@ -4,3 +4,7 @@
 可扩展性性：Kotlin提供的coroutines 扩展模块可以帮助我们快速搭建服务器应用，并扩展到多终端应用。<br>
 
 互通能力：Kotlin完全支持与java语言的库互相调用，因此java开发者可以在充分利用现有成熟的java开源库搭建应用的同时，享受到现代语言带来的开发乐趣。<br>
+
+迁移可行性：因为Kotlin全面支持与java的互相调用，因此，开发人员可以逐步的平滑的将旧的java逻辑替换成Kotlin实现。为已有复杂应用引入Kotlin降低风险和难度。
+
+学习难度：对于一个Java程序员，学习和开发Kotlin是非常容易的事情。同时Kotlin还提供plugin工具帮助自动转换java代码为Kotlin实现。Kotlin Koans提供
