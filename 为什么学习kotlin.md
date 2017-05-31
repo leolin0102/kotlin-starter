@@ -7,4 +7,7 @@
 
 迁移可行性：因为Kotlin全面支持与java的互相调用，因此，开发人员可以逐步的平滑的将旧的java逻辑替换成Kotlin实现。为已有复杂应用引入Kotlin降低风险和难度。
 
-学习难度：对于一个Java程序员，学习和开发Kotlin是非常容易的事情。同时Kotlin还提供plugin工具帮助自动转换java代码为Kotlin实现。Kotlin Koans提供
+学习难度：对于一个Java程序员，学习和开发Kotlin是非常容易的事情。同时Kotlin还提供plugin工具帮助自动转换java代码为Kotlin实现。Kotlin Koans提供了一系列的交互式教程，帮助练习并逐步掌握Kotlin的关键feature。本书也会提供大量程序样例来帮助大家更好的理解和运用Kotlin的特性。
+
+Kotlin开发的应用可以发布到任何支持Java Web中间件运势环境中去，包括Amazon Web Services，Google Cloud Platform。
+
