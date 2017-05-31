@@ -1,5 +1,7 @@
 # 为什么选择Kotlin
 丰富的表达能力：Kotlin语言是一个函数试编程和面向对象编程正交的语言，同时支持一些全新的语法特性，例如type-safe builder, delegated properties。这些特性可以帮助我们构建功能强大且易于使用和维护的抽象组件。<br>
+Kotlin支持典型的函数式编程范式，与面向对象编程的却别体现在以下几点：
+- 无状态
 
 可扩展性性：Kotlin提供的coroutines 扩展模块可以帮助我们快速搭建服务器应用，并扩展到多终端应用。<br>
 
@@ -9,5 +11,6 @@
 
 学习难度：对于一个Java程序员，学习和开发Kotlin是非常容易的事情。同时Kotlin还提供plugin工具帮助自动转换java代码为Kotlin实现。Kotlin Koans提供了一系列的交互式教程，帮助练习并逐步掌握Kotlin的关键feature。本书也会提供大量程序样例来帮助大家更好的理解和运用Kotlin的特性。
 
-Kotlin开发的应用可以发布到任何支持Java Web中间件运势环境中去，包括Amazon Web Services，Google Cloud Platform。
+Kotlin开发的应用可以发布到任何支持Java Web中间件运势环境中去，包括Amazon Web Services，Google Cloud Platform。同时Kotlin可以Spring Framework等第三方框架正交使用，因此，任何Kotlin应用或是Kotlin与Java混合编译的应用，都可以发布到任何java的中间件平台上。
 
+使用Kotlin开发Android应用
