@@ -7,3 +7,34 @@
 Kotlin处理Number类型的方式与java很接近，但是不是完全一样。尤其是不通的Number类型之前是不支持隐性的位扩展的，即不能直接将Int类型的变量赋值给一个Long。
 
 与java相同，Kotlin提供一下内建Number数据类型。
+
+<table>
+    <tr>
+        <td>类型</td>
+        <td>位宽</td>
+    </tr>
+    <tr>
+        <td>Double</td>
+        <td>64</td>
+    </tr>
+    <tr>
+        <td>Float</td>
+        <td>32</td>
+    </tr>
+    <tr>
+        <td>Long</td>
+        <td>64</td>
+    </tr>
+    <tr>
+        <td>Int</td>
+        <td>32</td>
+    </tr>
+    <tr>
+        <td>Short</td>
+        <td>16</td>
+    </tr>
+    <tr>
+        <td>Byte</td>
+        <td>8</td>
+    </tr>
+</table>
