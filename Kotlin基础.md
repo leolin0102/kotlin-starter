@@ -65,7 +65,7 @@ val hexBytes = 0xFF_EC_DE_5E
 val bytes = 0b11010010_01101001_10010100_10010010
 </code></pre>
 
-在java运行时环境中，Kotlin的numbers类型以虚拟机原型数据存储，除非我们生命为nullable类型（例如 Int?）或者我们显示的调用构造函数创建一个Number实例。同时后者 "nullable" 和 "显示的构造" 是number封箱（boxing）的。
+在java运行时环境中，Kotlin的numbers类型以虚拟机原型数据存储，除非我们生命为nullable类型（例如 Int?）或者我们显示的调用构造函数创建一个Number实例。同时后者 "nullable" 和 "显示的构造" 是number封箱（boxing）的。
 
 后者封箱的numbers是有独立的地址的。
 
@@ -98,7 +98,7 @@ print(a == b) //我们的期望是true，但是实际上结果是false
 因此，Kotlin不提供隐式的类型转换，意在避免我们在不明确两个Number变量类型的情况下，使用==比较。不允许也就不会出现不符合预期的错误了，而且极难发现。
 例如：算数运算符操作会自动做位扩展，因此，这样的类型转换时很难被注意到的。
 <pre><code>
-val l = 1L + 2 // Long + Int => Long 因为自动为扩展，因此l 实际上是64为的Long。
+val l = 1L + 2 // Long + Int => Long 因为自动为扩展，因此l 实际上是64为的Long。
 </code></pre>
 
 当需要做类型转换的时候，我们可以直接调用numbers提供的转换函数
@@ -130,7 +130,7 @@ Kotlin的nubers提供标准算数运算符集，每一个运算符都有提供�
 
     shl(bits) – 有符号左移 (Java's << )
 
-    shr(bits) – 有符号右移 (Java's >> )
+    shr(bits) – 有符号右移 (Java's >> )
 
     ushr(bits) – 无符号右移 (Java's >>> )
 
@@ -138,9 +138,9 @@ Kotlin的nubers提供标准算数运算符集，每一个运算符都有提供�
 
     or(bits) – 按位或
 
-    xor(bits) – 按位异或 （true xor true == false, false xor false == false, 其它情况为 true, 一般用于计算出哪些位置不一样的时候使用)
+    xor(bits) – 按位异或 （true xor true == false, false xor false == false, 其它情况为 true, 一般用于计算出哪些位置不一样的时候使用)
 
-    inv() – 位反转
+    inv() – 位反转
 
 ### 字符型 （characters）
 
