@@ -38,3 +38,29 @@ Kotlin处理Number类型的方式与java很接近，但是不是完全一样。�
         <td>8</td>
     </tr>
 </table>
+
+这里要注意Kotlin没有把字符型引入Number中。
+
+### 整型：
+十进制：10000
+
+    十进制长整型采用数字后加字符 ‘L’ 表示：123L
+
+十六进制： 十六进制数以 '0x' 开始。 0x1F
+
+二进制：二进制数以 '0b' 开始. 0b10010101
+
+注意：Kotlin中不支持八进制类型。
+
+### 浮点数：
+如果不明确指明类型，默认类型为Doubles。175.34, 1.5e10
+单精度浮点 Float 采用数字后跟 'F' 或者 'f'：3.45f
+
+支持使用下划线分隔符增加数字可读性。
+<pre><code>
+val oneMillion = 1_000_000
+val creditCardNumber = 1234_5678_9012_3456L
+val socialSecurityNumber = 999_99_9999L
+val hexBytes = 0xFF_EC_DE_5E
+val bytes = 0b11010010_01101001_10010100_10010010
+</code></pre>
