@@ -64,3 +64,109 @@ val socialSecurityNumber = 999_99_9999L
 val hexBytes = 0xFF_EC_DE_5E
 val bytes = 0b11010010_01101001_10010100_10010010
 </code></pre>
+
+在java运行时环境中，Kotlin的numbers类型以虚拟机原型数据存储，除非我们生命为nullable类型（例如 Int?）或者我们显示的调用构造函数创建一个Number实例。同时后者 "nullable" 和 "显示的构造" 是number封箱（boxing）的。
+
+后者封箱的numbers是有独立的地址的。
+
+<pre><code>
+val a: Int = 10000
+
+print(a === a) // 打印 'true'
+
+print(a == a) // 打印 'true'
+
+val boxedA: Int? = a
+val anotherBoxedA: Int? = a
+
+print(boxedA === anotherBoxedA) // !!!打印 'false'!!!
+
+print(boxedA == anotherBoxedA) // !!!打印 'true'!!!
+
+</code></pre>
+
+显式的类型转换
+
+上面提到过Kotlin的nubers不支持类型之间的自动转化，即自动位扩展。因此虽然同是整形，Int不能自动转换成Long从而将一个Int类型数据赋值给Long。原因是如果支持隐式类型转换，我们很容易会写出下面的代码，而且期望 == 返回的结果是true。
+
+<pre><code>
+val a: Int? = 1
+val b: Long? = a //由于nulable被封箱（boxing）a 和 b 虽然数值是相等的，但是却是两个实例。
+print(a == b) //我们的期望是true，但是实际上结果是false
+</code></pre>
+
+因此，Kotlin不提供隐式的类型转换，意在避免我们在不明确两个Number变量类型的情况下，使用==比较。不允许也就不会出现不符合预期的错误了，而且极难发现。
+例如：算数运算符操作会自动做位扩展，因此，这样的类型转换时很难被注意到的。
+<pre><code>
+val l = 1L + 2 // Long + Int => Long 因为自动为扩展，因此l 实际上是64为的Long。
+</code></pre>
+
+当需要做类型转换的时候，我们可以直接调用numbers提供的转换函数
+<pre><code>
+val i: Int = b.toInt()
+</code></pre>
+
+所有的numbers类型（Double, Float, Long, Int, Short, Byte）都支持下面的用于类型转换的函数:
+
+    toByte(): Byte
+
+    toShort(): Short
+
+    toInt(): Int
+
+    toLong(): Long
+
+    toFloat(): Float
+
+    toDouble(): Double
+
+    toChar(): Char
+
+
+操作符
+
+Kotlin 的nubers提供标准算数运算符集，每一个运算符都有提供一个可选的类实现。（编译器会根据情况选择最优的实现）
+
+下面是所有为操作的操作符实现：（仅Int， Long）
+
+    shl(bits) – 有符号左移 (Java's << )
+
+    shr(bits) – 有符号右移 (Java's >> )
+
+    ushr(bits) – 无符号右移 (Java's >>> )
+
+    and(bits) – 按位与
+
+    or(bits) – 按位或
+
+    xor(bits) – 按位异或 （true xor true == false, false xor false == false, 其它情况为 true, 一般用于计算出哪些位置不一样的时候使用)
+
+    inv() – 位反转
+
+### 字符型 （characters）
+
+在Kotlin中字符型是Char类型。Char不属于numbers。
+
+<pre><code>
+fun check(c: Char) {
+    if (c == 1) { // ERROR: 没有Char 与 Int的算术运算符，不能做比较
+        // ...
+    }
+}
+</code></pre>
+
+字符型用单引号声明：’1‘。 特殊字符可以使用反斜杠进行转译。'\t', '\b', '\n', '\r' , '\'' , '\"' , '\\' 和 ‘\$’， 其它字符则使用Unicode来表示。'\uFF00'
+
+字符型数据可以转换成Int：
+
+<pre><code>
+fun decimalDigitValue(c: Char): Int {
+    if (c !in '0'..'9')
+        throw IllegalArgumentException("Out of range")
+    return c.toInt() - '0'.toInt() // 显式的转换为numbers
+}
+</code></pre>
+
+与numbers相同，nullable引用字符型同样会转换成封箱对象。
+
+### 布尔型（Booleans）
