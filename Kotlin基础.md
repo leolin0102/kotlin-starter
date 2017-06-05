@@ -234,3 +234,6 @@ val text = """
     print(c)
 """
 </code></pre>
+
+我们可以通过调用trimMartgin()函数：
+
