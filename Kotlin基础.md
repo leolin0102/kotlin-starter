@@ -235,5 +235,39 @@ val text = """
 """
 </code></pre>
 
-我们可以通过调用trimMartgin()函数：
+我们可以通过调用trimMartgin()函数来消除每一行句首的空格。
 
+<pre><code>
+val text = """
+    |Tell me and I forget.
+    |Teach me and I remember.
+    |Involve me and I learn.
+    |(Benjamin Franklin)
+    """.trimMargin()
+</code></pre>
+
+上面这段代码的输出结果：
+Tell me and I forget.
+Teach me and I remember.
+Involve me and I learn.
+(Benjamin Franklin)
+
+text变量中的 '|' 是默认的消除空格的前缀，不已 ‘|’ 开始的行，不会消除句首的空格。此函数接受一个参数来允许用户自定义 前缀。例如： text.trimMargin(">")
+
+### 字符串模板
+
+string类型支持内嵌表达式，从而支持模版功能，在执行将字符串赋值的时候，表达式会被执行。字符串中的表达式以 '$'开始后跟简单变量名：
+
+<pre><code>
+val i = 10
+val s = "i = $i" // 执行后 s 值为 "i = 10"
+</code></pre>
+
+或者后面跟以大括号内嵌表达式的形式：
+
+<pre><code>
+val s = "abc"
+val str = "$s.length is ${s.length}" // 执行后 str 的值为 "abc.length is 3"
+</code></pre>
+
+多行文本同样支持模板功能。但是如果我们想在文本内输出 ‘$’ 符号本身，就只能通过这种形式了 ${'$'}
