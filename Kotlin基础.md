@@ -334,4 +334,104 @@ JS:
 
 Kotlin中也同样可以实现静态函数的导入，只是不需要额外的添加static描述，统一用import就可以。
 
-### 顶级函数的作用域
+顶级函数的作用域
+
+ 如果我们在顶级函数前面加上 private 的修饰，那么这个函数将是private的，仅在这个文件内可见。
+
+（这部分我实在车里写完的，我老婆是司机）
+
+## 控制流 （Control Flow）
+
+### If 表达式
+
+在Kotlin语言中if 是表达式，因此，question语法不再需要（condition ? value1 : value2)。因为if表达式本身就可以实现。
+
+因此，我们可以这样完成question的工作：
+<pre><code>
+// java中
+int max = a;
+if (a < b) max = b;
+
+// 或者使用 else
+int max;
+if (a > b) {
+    max = a;
+} else {
+    max = b;
+}
+
+// Kotlin 表达式赋值
+val max = if (a > b) a else b
+</code></pre>
+
+如果我们的分支由代码块实现，且最后一行是表达事，将被默认作为结果返回。代码如下
+
+<pre><code>
+val max = if (a > b) {
+    print("Choose a")
+    a // return a
+} else {
+    print("Choose b")
+    b // reutrn b
+}
+</code></pre>
+
+这里如果我们使用if表达式，而不是if语句，则else 分支是必须的，也就是 "val a =" 后跟if表达式的时候，必须有else。
+
+### When 表达式
+
+When表达式替换了从前我们在C, java语言中使用的switch语法，一个when表达式的极简形式像这样：
+
+<pre><code>
+// 个人挺喜欢这样的写法。
+when (x) {
+    1 -> print("x == 1")
+    2 -> print("x == 2")
+    else -> { // Note the block
+        print("x is neither 1 nor 2")
+    }
+}
+</pre></code>
+
+when会顺序匹配分支条件，直到匹配到第一个满足条件的分支。when既可用在表达式上也可以用在语句上。如果when用作表达式，被匹配的分支代码块中返回的结果将作为整个when语句的结果。when作为语句时，被匹配到的分支即使有返回结果，也会被忽略。
+
+上面的程序中，else 就等同与default分支，即如果没有条件被匹配，则执行else。在when表达式中，else语句时不可以省略的，除非编译器可以推演出所有的数据，都被条件覆盖。既然是表达式，逻辑上就必然会有一个结果。例如我们输入的参数是一个枚举类型的变量，且所有的可能的值都被when的分支覆盖了，编译器就不会强制我们必须要有一个else。
+
+如果过个条件分支应用同一个处理逻辑，则我们可以使用逗号 ',' 来合并多个条件：
+
+<pre><code>
+when (x) {
+    0, 1 -> print("x == 0 or x == 1")
+    else -> print("otherwise")
+}
+</code></pre>
+
+Kotlin中的when与很多语言中的switch有很大的不同，它不紧紧局限于一个常量，我们可以使用一个函数来在运行时根据上下文返回分支的条件：
+
+<pre><code>
+when (x) {
+    parseInt(s) -> print("s encodes x") //s 是函数上下文中的一个变量
+    else -> print("s:${s} does not encode x: ${x}")
+}
+</code></pre>
+
+我们可以使用 'in' 或者 '!in' 关键字来确定输入的参数是否在range (我们在后面会介绍range概念) 或者 集合内（Collection）:
+
+<pre><code>
+when (x) {
+    in 1..10 -> print("x is in the range")
+    in validNumbers -> print("x is valid")
+    !in 10..20 -> print("x is outside the range")
+    else -> print("none of the above")
+}
+</code></pre>
+
+同样，可以使用 'is' 或者 '!is' 来根据输入的参数的类型进行匹配。
+
+<pre><code>
+val hasPrefix = when(x) {
+    is String -> x.startsWith("prefix") //这里我们就可以直接将x 作为string类型来使用，不用再做类型检测。
+    else -> false
+}
+</code></pre>
+
