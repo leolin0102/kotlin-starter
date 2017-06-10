@@ -334,4 +334,187 @@ JS:
 
 Kotlin中也同样可以实现静态函数的导入，只是不需要额外的添加static描述，统一用import就可以。
 
-### 顶级函数的作用域
+顶级函数的作用域
+
+ 如果我们在顶级函数前面加上 private 的修饰，那么这个函数将是private的，仅在这个文件内可见。
+
+（这部分我实在车里写完的，我老婆是司机）
+
+## 控制流 （Control Flow）
+
+### If 表达式
+
+在Kotlin语言中if 是表达式，因此，question语法不再需要（condition ? value1 : value2)。因为if表达式本身就可以实现。
+
+因此，我们可以这样完成question的工作：
+<pre><code>
+// java中
+int max = a;
+if (a < b) max = b;
+
+// 或者使用 else
+int max;
+if (a > b) {
+    max = a;
+} else {
+    max = b;
+}
+
+// Kotlin 表达式赋值
+val max = if (a > b) a else b
+</code></pre>
+
+如果我们的分支由代码块实现，且最后一行是表达事，将被默认作为结果返回。代码如下
+
+<pre><code>
+val max = if (a > b) {
+    print("Choose a")
+    a // return a
+} else {
+    print("Choose b")
+    b // reutrn b
+}
+</code></pre>
+
+这里如果我们使用if表达式，而不是if语句，则else 分支是必须的，也就是 "val a =" 后跟if表达式的时候，必须有else。
+
+### When 表达式
+
+When表达式替换了从前我们在C, java语言中使用的switch语法，一个when表达式的极简形式像这样：
+
+<pre><code>
+// 个人挺喜欢这样的写法。
+when (x) {
+    1 -> print("x == 1")
+    2 -> print("x == 2")
+    else -> { // Note the block
+        print("x is neither 1 nor 2")
+    }
+}
+</pre></code>
+
+when会顺序匹配分支条件，直到匹配到第一个满足条件的分支。when既可用在表达式上也可以用在语句上。如果when用作表达式，被匹配的分支代码块中返回的结果将作为整个when语句的结果。when作为语句时，被匹配到的分支即使有返回结果，也会被忽略。
+
+上面的程序中，else 就等同与default分支，即如果没有条件被匹配，则执行else。在when表达式中，else语句时不可以省略的，除非编译器可以推演出所有的数据，都被条件覆盖。既然是表达式，逻辑上就必然会有一个结果。例如我们输入的参数是一个枚举类型的变量，且所有的可能的值都被when的分支覆盖了，编译器就不会强制我们必须要有一个else。
+
+如果过个条件分支应用同一个处理逻辑，则我们可以使用逗号 ',' 来合并多个条件：
+
+<pre><code>
+when (x) {
+    0, 1 -> print("x == 0 or x == 1")
+    else -> print("otherwise")
+}
+</code></pre>
+
+Kotlin中的when与很多语言中的switch有很大的不同，它不紧紧局限于一个常量，我们可以使用一个函数来在运行时根据上下文返回分支的条件：
+
+<pre><code>
+when (x) {
+    parseInt(s) -> print("s encodes x") //s 是函数上下文中的一个变量
+    else -> print("s:${s} does not encode x: ${x}")
+}
+</code></pre>
+
+我们可以使用 'in' 或者 '!in' 关键字来确定输入的参数是否在range (我们在后面会介绍range概念) 或者 集合内（Collection）:
+
+<pre><code>
+when (x) {
+    in 1..10 -> print("x is in the range")
+    in validNumbers -> print("x is valid")
+    !in 10..20 -> print("x is outside the range")
+    else -> print("none of the above")
+}
+</code></pre>
+
+同样，可以使用 'is' 或者 '!is' 来根据输入的参数的类型进行匹配。
+
+<pre><code>
+val hasPrefix = when(x) {
+    is String -> x.startsWith("prefix") //这里我们就可以直接将x 作为string类型来使用，不用再做类型检测。
+    else -> false
+}
+</code></pre>
+
+when语句可以用来代替 if - else if 链:
+
+<pre><code>
+when {
+    x.isOdd() -> print("x is odd")
+    x.isEven() -> print("x is even")
+    else -> print("x is funny")
+}
+</code></pre>
+
+### For Loops
+
+For Loop 语句可以对任何支持 iterator 迭代能力的对象进行迭代（遍历）:
+
+<pre><code>
+for (item in collection) print(item) //collection内的所有对象都会被打印
+
+for (item: String in collection) {
+    print(item)
+}
+</code></pre>
+
+任何具有iterator 能力的对象都可以用在for语句中：
+
+- 有 iterator()成员函数，或者扩展函数（extension），同时函数返回的对象有 next() 和 hasNext() 成员函数或者扩展函数的对象。
+注意：所有者三个函数都必须被标记为操作符 operator。
+
+我们后面会介绍扩展（extension）的语法及使用技巧。
+
+for循环语句使用索引形式循环访问“数组” 或 “列表”内的每一个元素，而不是迭代器方式，如果我们需要使用迭代的方式，需要使用index 变量来便利整个数组或是列表，我们可以通过获取一个索引迭代器来实现。有的时候，我们需要有选择的迭代，一次可以通过index来筛选。
+
+<pre><code>
+val arr = arrayOf(2, 4, 6, 8)
+for (i in arr.indices) {
+    if (i % 2 == 0) print("${arr[i]} ")
+}
+
+// print 2 6
+</code></pre>
+
+上面的逻辑同样可以使用函数试来实现，灵活性更高，且容易被优化。
+
+//todo 增加函数试实现的代码并进行讲解。
+
+注意：对range的迭代 "1..10" 经过编译器优化，因此，在内存中，不会产生额外的range对象。 
+
+一个替代形式是我们可以调用库函数 withIndex：
+
+<pre><code>
+//有点像python中的iter库函数
+for ((index, value) in array.withIndex()) {
+    println("the element at $index is $value")
+}
+</code></pre>
+
+### While Loops
+
+Kotlin 支持 while 和 do while 两种 While Loops 的形式。
+
+while 语句含义为，当条件为true的时候会一直循环执行，当为false时，则跳出循环。
+
+<pre><code>
+//当 x 大于 0 的时候，则反复执行 x--, 知道 x == 0则跳出while循环。
+val x = 100
+while (x > 0) {
+    x--
+}
+
+//注意，这里while 用户判断的条件引用的变量时循环体内部的变量，而不是循环体外面的变量，因此此代码不能转换成上面的形式，这时while 和 do while的区别。
+do {
+    val y = retrieveData()
+} while (y != null) // y is visible here!
+</code></pre>
+
+这里我们可以看到，do while 这个代码的写法，是线程安全的，因为循环体只修改循环体内的数据，因此 do while 这样的写法是没有副作用的。
+
+### break 和 continue
+
+我们可以使用 break 和 continue 来在循环体内部控制循环， 当 break 被执行，则直接跳出整个循环逻辑，即使此时while的条件为true。 当 continue 被执行，则仅跳过循环体 continue 后面的语句，进行下一次判断，如果while 的条件返回true，则继续循环，否则，跳出整个循环。
+
+### Returns 和 Jumps
+
+
