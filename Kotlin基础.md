@@ -435,6 +435,7 @@ val hasPrefix = when(x) {
 }
 </code></pre>
 
+<<<<<<< HEAD
 when语句可以用来代替 if - else if 链:
 
 <pre><code>
@@ -517,4 +518,84 @@ do {
 
 ### Returns 和 Jumps
 
+Kotlin有三种跳转形式：
 
+- return 默认情况下return将从函数内活着匿名函数内返回。
+- break 从loop内部跳转，终止循环
+- continue 挑出本次loop循环，进行下一次
+
+所有的跳转符号都可以嵌入更大的表达式
+
+<pre><code>
+val s = person.name ?: return
+</code></pre>
+
+//TODO 解释这个含义 The type of these expressions is the Nothing type.
+
+### Break 和 Continue 标记
+
+任何表达式都可以被打标记，标记格式以标记名称后跟一个 ‘@’ 符号。我们只需要将标记添加在表达式的前面就可以。
+
+<pre><code>
+loop@ for (i in 1..100) {
+    // do nothing
+}
+</code></pre>
+
+标记用于指定break 和 continue跳出的loop位置，当我们有loop嵌套的逻辑时，可以通过跳转到标记，从而直接从内层嵌套内控制直接跳转外层嵌套。
+
+<pre><code>
+loop@ for (i in 1..100) {
+    for (j in 1..100) {
+        if (...) break@loop
+    }
+}
+</code></pre>
+
+### Return 返回指定的标记
+
+函数试迭代数组时，例如forEach函数接收一个对象表达式（闭包），这样我们就形成了一个内嵌对象。在内嵌对象中return，会直接从外部函数返回。
+
+<pre><code>
+fun foo() {
+    ints.forEach {
+        if (it == 0) return //从foo函数直接返回，而不是从内嵌类返回运行下一次迭代。
+        print(it)
+    }
+}
+</code></pre>
+
+如果我们想实现仅从本次迭代返回，进行下一次循环，而不挑出foo函数，我们就需要对内嵌对象进行标记。
+
+<pre><code>
+fun foo() {
+    ints.forEach lit@ {
+        if (it == 0) return@lit
+        print(it)
+    }
+}
+</code></pre>
+
+大多数时候，我们可以将函数名作为隐含的标记来跳转。如果你觉得函数名称本身就可以反映跳转逻辑，就可以省去手动的标记。但是，省事不代表是对的，如果跳转的函数，没有任何逻辑性，我们还是有必要从语言上给代码与读者一个信息。
+
+<pre><code>
+fun foo() {
+    ints.forEach {
+        if (it == 0) return@forEach //这里使用forEach函数名作为隐含标签，但是，这样比较通用的标签，不太适合表达业务逻辑。
+        print(it)
+    }
+}
+</code></pre>
+
+我们也可以定义一个匿名函数来实现内嵌对象（后面我们会介绍high order function的时候，也会提到），在匿名函数中的return，则仅仅从匿名函数内返回。
+
+<pre><code>
+fun foo() {
+    ints.forEach(fun(value: Int) {
+        if (value == 0) return //跳出本地迭代，进行下一次循环
+        print(value) 
+    })
+}
+</code></pre>
+
+我们可以在返回结果的同时，指定返回的位置。例如：return@a 1 的执行结果是，跳出标记的语句并返回结果1.
