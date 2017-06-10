@@ -435,6 +435,7 @@ val hasPrefix = when(x) {
 }
 </code></pre>
 
+<<<<<<< HEAD
 when语句可以用来代替 if - else if 链:
 
 <pre><code>
