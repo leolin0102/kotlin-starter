@@ -270,4 +270,68 @@ val s = "abc"
 val str = "$s.length is ${s.length}" // 执行后 str 的值为 "abc.length is 3"
 </code></pre>
 
-多行文本同样支持模板功能。但是如果我们想在文本内输出 ‘$’ 符号本身，就只能通过这种形式了 ${'$'}
+多行文本同样支持模板功能。但是如果我们想在文本内输出 ‘$’ 符号本身，就只能通过这种形式了 ${'$'}.这样挺麻烦的，不过还好，我们不会经常碰到这样的情况。
+
+## 包 (Packages)
+
+一个源代码文件可以以一个Package 声明开始。
+
+<pre><code>
+package foo.bar
+fun baz() {}
+class Goo {}
+</code></pre>
+
+文件头部的package声明作用于整个文件，声明中包 foo.bar 是整个文件中函数和类的容器。因此函数 baz() 的全名是 foo.bar.baz, 同样类 Goo的全名是 foo.bar.Goo。
+
+如果我们创建一个没有包声明的源文件，则文件内的所有类和函数会被包含在一个没有名字的默认包容器中。默认包会被默认倒入到所有的源代码文件中，可以直接被引用。
+我们在开发过程中，需要尽量避免使用默认作用域从而避免命名冲突，尤其是具有一定通用含义的函数或者类。加入我们提供一个叫open()的函数来实现打开一个文件，但是，如果我们这时引入的数据库链接库也有这么一个默认包下的open()是建立一个数据库链接。这时，要么就是我们改代码，要么就是换个数据库库了。
+
+## 导入包
+
+当我们在一个源文件下，想调用特定包下的函数，或者引用特定包下的类，我们需要通过import来倒入指定的包。
+<pre><code>
+pcakage org.leo.log
+import foo.*
+import foo.bar.Goo as g //通过 as 关键字我们可以给导入的对象指定别名
+
+fun debug() {
+    baz()
+}
+
+</code></pre>
+
+与java相同，Kotlin预设了默认倒入包，所有的源代码文件都可以不通过显示的导入来直接调用或者引用它们。
+
+### 默认导入包：
+
+Kotlin:
+- kotlin.*
+- kotlin.annotation.*
+- kotlin.collections.*
+- kotlin.comparisons.* (since 1.1)
+- kotlin.io.*
+- kotlin.ranges.*
+- kotlin.sequences.*
+- kotlin.text.*
+
+还有一部分默认导入包是根据运行时环境的不同而决定的：
+
+JVM:
+- java.lang.*
+- kotlin.jvm.*
+
+JS:
+- kotlin.js.*
+
+在上面的例程中我们提到，import不仅可以声明导入包，还可以导入其它元素：
+
+- 顶级函数(function)和属性(properties)
+- 对象内的函数和属性
+- 枚举常量
+
+与java不同的是，Kotlin没有静态导入import static的语法，java中用静态导入来简化对指定类中静态函数的调用，有java同学开发elasticsearch 驱动查询数据的时候，会用到静态导入的方式，构建搜索查询条件。elasticsearch query查询条件的构造也适用了“构造器”设计模式，query条件的构造是一种典型的使用数据结构，组合的形式实现算法的设计方式。也就是我们的查询算法是靠一个数据结构描述的模型驱动的，而不是一个写出来的代码块。
+
+Kotlin中也同样可以实现静态函数的导入，只是不需要额外的添加static描述，统一用import就可以。
+
+### 顶级函数的作用域
