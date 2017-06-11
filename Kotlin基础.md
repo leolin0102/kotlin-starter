@@ -520,6 +520,7 @@ do {
 
 Kotlin有三种跳转形式：
 
+<<<<<<< HEAD
 - return 默认情况下return将从函数内活着匿名函数内返回。
 - break 从loop内部跳转，终止循环
 - continue 挑出本次loop循环，进行下一次
