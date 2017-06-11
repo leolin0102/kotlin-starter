@@ -586,7 +586,7 @@ fun foo() {
 }
 </code></pre>
 
-我们也可以定义一个匿名函数来实现内嵌对象（后面我们会介绍high order function的时候，也会提到），在匿名函数中的return，则仅仅从匿名函数内返回。
+我们也可以定义一个匿名函数来实现内嵌对象（后面我们会介绍high order function的时候，也会提到），在匿名函数中的return，则仅仅从匿名函数内返回。
 
 <pre><code>
 fun foo() {
