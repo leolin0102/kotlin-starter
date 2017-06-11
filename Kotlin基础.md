@@ -541,7 +541,7 @@ loop@ for (i in 1..100) {
 }
 </code></pre>
 
-标记用于指定break 和 continue跳出的loop位置，当我们有loop嵌套的逻辑时，可以通过跳转到标记，从而直接从内层嵌套内控制直接跳转外层嵌套。
+标记用于指定break 和 continue跳出的loop位置，当我们有loop嵌套的逻辑时，可以通过跳转到标记，从而直接从内层嵌套内控制直接跳转外层嵌套。
 
 <pre><code>
 loop@ for (i in 1..100) {
