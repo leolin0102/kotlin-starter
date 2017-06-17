@@ -234,3 +234,27 @@ abstract class Derived : Base() {
 }
 
 </code></pre>
+
+## 伴生对象
+
+因为Kotlin是没有 static 关键字的，因此类没有静态方法。推荐直接使用 package 作用域下的函数来代替。
+
+如果想定义一个方法，想不通过获得一个类的实例直接调用，但同时右想访问被调用对象的内部。（例如，工厂方法）我们可以在被调用类内用companion object 关键字声明一个内部类，我们在半生对象内，可以像在java中调用静态方法一样，来调用宿主对象内的方法，只是需要使用宿主的类名作为前缀
+
+<pre><code>
+
+class MyClass {
+
+    fun hello() {}
+    companion object CompanionObj {
+        fun touchIt(): {
+            MyClass.hello()
+        }
+    }
+}
+
+</code></pre>
+
+### 属性和字段（property and fields）
+
+在面向对象设计中，一个类可以具有多种属性，例如，我们创建一个类来代表员工 Staff，
