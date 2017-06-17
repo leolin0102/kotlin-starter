@@ -78,7 +78,7 @@ class Person {
 }
 </code></pre>
 
-所有的次要构造函数都必须继承主构造函数，也可以继承其它已经继承自主构造函数的次要构造函数。使用 : 后跟this(<parameters>)的形式。
+所有的次要构造函数都必须继承主构造函数，也可以继承其它已经继承自主构造函数的次要构造函数。使用 : 后跟this(&lt;parameters&gt;)的形式。
 
 <pre><code>
 class Person(val name: String) {
@@ -153,4 +153,84 @@ class MyView : View {
 
 上面出现的open关键字相当于java中的final的反作用。因为在Kotlin语言中，所有的类都是final类型的，只有open类型的类才可以被继承。这样设计的原因在于，往往开发过程中，我们很难将我们开发的每一个类都设计的适合被继承，在java中，我们经常是又很多函数，一旦被子类覆盖实现，就会彻底崩溃掉。因此Kotlin则采用严谨的态度，只有我们设计中允许被重载的函数或者基类，才可以通过我们使用open关键字来开放，否则，就允许继承和重载。
 
-### 函数重载
+### 方法重载
+
+Kotlin需要明确的使用override来声明对父类的open类型的函数进行重载。
+
+<pre><code>
+open class Base {
+    open fun v() {}
+    fun nv() {}
+}
+
+class Derived() : Base() {
+    override fun v() {} //我们必须使用 override 关键字，否则编译器会警告
+}
+</code></pre>
+
+没有 open 修饰的函数，子类即使使用了 override 也是不合法的，编译会失败。如果类头部未使用 open 修饰，则函数也不允许为 open 类型。
+
+添加了 override 的方法，本身是可以被它的子类重载的，如果想禁止，则需要增加 final关键字。
+
+<pre><code>
+open class AnotherDerived() : Base() {
+    final override fun v() {}
+}
+</code></pre>
+
+### 属性重载
+
+属性重载的方式和方法重载类似，也是通过 override 声明，且只能重载父类中open类型的属性, 但是我们可以将不可变变量重载为可变变量，反过来也可以。重载不能改变属性的数据类型，只能抽载属性的初始化和 get 方法。
+
+注意：override 关键字可以出现在主构造函数的参数列表中。
+
+<pre><code>
+interface Foo {
+    val count: Int
+}
+
+class Bar1(override val count: Int) : Foo
+
+class Bar2 : Foo {
+    override var count: Int = 0 //在此增加属性默认值，以及将不可变属性重载为可变属性。
+}
+</code></pre>
+
+### 重载规则
+
+Kotlin中重载有一个需要遵守的规则，如果一个类的上层存在同一个方法的多个实现的话（例如，父类和接口扩展都实现了同一个方法），则子类必须重载此方法并提供自己的实现。这时java面向对象中不可能出现的情况。一种简单的方式是，在子类的实现中，通过super&lt;type&gt;这个关键字来
+
+<pre><code>
+open class A {
+    open fun f() { print("A") }
+    fun a() { print("a") }
+}
+interface B {
+    //后面我们会讲到，Kotlin中接口可以提供默认的实现，着类似swift中的扩展，因此我们可以不通过集成，直接通过扩展的方式，为任何类增加新的方法。即能力。
+    fun f() { print("B") } // 接口中的方法默认是open类型的
+    fun b() { print("b") }
+}
+class C() : A(), B {
+    // 因为这个类的父类和接口中都实现了这个方法，因此，即使我们没打算在子类从载，编译器也需要我们提供一个明确的实现来避免歧义。
+    // 这里，我们可以简单的通过
+    override fun f() {
+        super&lt;A&gt;.f() // call to A.f()
+        super&lt;B&gt;.f() // call to B.f()
+    }
+}
+</code></pre>
+
+## 抽象类
+
+同java一样，我们可以通过 abstract 来定义抽象类和抽象方法。抽象方法没有具体的实现。且因为抽象函数就是希望被子类实现的，因此，不需要使用open修复，就可以被子类重载。
+
+<pre><code>
+
+open class Base {
+    open fun f() {}
+}
+abstract class Derived : Base() {
+    override abstract fun f()
+}
+
+</code></pre>
