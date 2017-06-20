@@ -258,3 +258,70 @@ class MyClass {
 ### 属性和字段（property and fields）
 
 在面向对象设计中，一个类可以具有多种属性，例如，我们创建一个类来代表员工（Staff），每个公司的员工，都有工龄，薪资，入职时间，职位，部门，这些都是一个员工的属性，这些都是 Staff 类的 properties。
+
+类可以有多个属性。可以声明成可变属性 var 和不可变 val 两种。
+
+<pre><code>
+class Address {
+    var name: String = ...
+    var street: String = ...
+    var city: String = ...
+    var state: String? = ...
+    var zip: String = ...
+}
+</code></pre>
+
+我们可以通过属性名直接引用一个属性。
+
+<pre><code>
+fun copyAddress(address: Address): Address {
+    val result = Address() // there's no 'new' keyword in Kotlin
+    result.name = address.name // accessors are called
+    result.street = address.street
+    // ...
+    return result
+}
+</code></pre>
+
+### Getter 和 Setter
+
+声明一个属性的完整语法
+
+<pre><code>
+var &lt;propertyName&gt;[: &lt;PropertyType&gt;] [= &lt;property_initializer&gt;]
+    [&lt;getter&gt;]
+    [&lt;setter&gt;]
+</code></pre>
+
+property_initializer，getter， setter 都是可选的，如果initializer存在，或者getter提供返回值可以让编译器推断出属性类型，则PropertyType也是可选的。
+
+<pre><code>
+var allByDefault: Int? // error: 需要明确的初始值
+var initialized = 1 // 定义Int 类型的变量initialized，缺省的getter和setter函数
+</code></pre>
+
+不可变属性以val开头，且不允许又setter函数。
+
+<pre><code>
+val simple: Int? // Int类型变量simple， 默认的getter函数实现，因为是不可变，因此必须要在类的构造函数中初始化。
+val inferredType = 1 // 取值为1的 Int 类型变量 inferredType，默认的 getter 函数实现。
+</code></pre>
+
+我们可以自定义 getter 函数：
+
+<pre><code>
+val isEmpty: Boolean
+    get() = this.size == 0
+</code></pre>
+
+代码中，this关键字是对当前类实例的引用。
+
+自定义 setter 函数：
+
+<pre><code>
+var stringRepresentation: String
+    get() = this.toString()
+    set(value) {
+        setDataFromString(value) // parses the string and assigns values to other properties
+    }
+</code></pre>
