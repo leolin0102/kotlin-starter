@@ -259,6 +259,8 @@ class MyClass {
 
 在面向对象设计中，一个类可以具有多种属性，例如，我们创建一个类来代表员工（Staff），每个公司的员工，都有工龄，薪资，入职时间，职位，部门，这些都是一个员工的属性，这些都是 Staff 类的 properties。
 
+属性为一个类的状态，外部只可以通过getter 和 setter 来访问一个类的属性。而字段则是一个类下的变量，外部可以直接访问，不需要通过 getter 和 setter函数，但是，Kotlin不支持字段。
+
 类可以有多个属性。可以声明成可变属性 var 和不可变 val 两种。
 
 <pre><code>
@@ -325,3 +327,24 @@ var stringRepresentation: String
         setDataFromString(value) // parses the string and assigns values to other properties
     }
 </code></pre>
+
+缺省的setter如参叫value，大部分时候，直接的使用value这个名字会很方便，但是，我们可以使用一个自己的名字来代替value这个缺省值。
+
+Kotlin 1.1以后，你可以通过自定义getter函数的返回类型来指定属性的类型。
+
+<pre><code>
+val isEmpty get() = this.size == 0 // has type Boolean
+</code></pre>
+
+如果我们只想改变属性的作用域，或者对其进行注解，但是不想自定义属性的 getter 和 setter函数，我们可以省略函数的body：
+
+<pre><code>
+var setterVisibility: String = "abc"
+    private set // 这里不需要提供setter的body
+var setterWithAnnotation: Any? = null
+    @Inject set // 我们后面向大家介绍注解的概念
+</code></pre>
+
+辅助字段 （Backing Field）
+
+Kotlin中的类是不支持字段的。但是，当我们自定义 setter 函数的时候，
