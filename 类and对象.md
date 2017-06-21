@@ -365,9 +365,9 @@ field关键字仅可以在属性的访问函数（getter 和 setter）中使用�
 <pre><code>
 val isEmpty: Boolean
     get() = this.size == 0
-</cocde></pre>
+</code></pre>
 
-辅助属性 (Backing Property)
+### 辅助属性 (Backing Property)
 
 如果 ，我们想实现的属性访问函数没法使用辅助字段来实现，我们可以声明一个私有的辅助属性。
 
@@ -401,4 +401,53 @@ const val SUBSYSTEM_DEPRECATED: String = "This subsystem is deprecated"
 @Deprecated(SUBSYSTEM_DEPRECATED) fun foo() { ... }
 </code></pre>
 
-### 
+### 后赋值属性
+
+Kotlin的属性分为可选属性用 ？注明（optional）和 非空属性 ！号注明，未指定时，属性默认都是非空属性。
+
+非空属性必须要在构造函数中声明，但是有的时候，我们没法在构造函数中赋值，但是，又想声明成非空属性，这样引用这个属性的所有地方，就都不用做判空处理了。例如，在对象构造后，由依赖注入框架赋值或单元测试中的setup函数中赋值等，我们可以使用 lateinit 关键字来告诉编译器，稍后会第一时间为此属性赋值。
+
+<pre><code>
+public class MyTest {
+    lateinit var subject: TestSubject
+    @SetUp fun setup() {
+        subject = TestSubject()
+    }
+    @Test fun test() {
+        subject.method()
+    }
+    // dereference directly
+}
+</code></pre>
+
+注意只有可变属性 var 才可以后赋值。如果在后赋值属性被初始化之前访问此属性，则会抛出特定的异常来告诉开发者。
+
+## 接口 （Interface）
+
+Kotlin的接口和java8十分相似,其实我觉得跟swift的protocol更像。接口是面向对象中非常重要的一个概念。但是，纯面向对象中的接口必须全部都是抽象函数，即只有函数的定义没有body，声明实现此接口的类，必须提供接口中抽象函数的实现。Kotlin中的接口，即可以是抽象函数，也可以提供默认实现，即非抽象函数。但是，接口是不可以保存属性的状态。因此，不可以在接口中给属性赋值，要么声明抽象属性，要么为属性提供自定义访问函数。
+
+接口使用 interface 关键字来声明:
+
+<pre><code>
+interface MyInterface {
+    fun bar()
+    fun foo() {
+        // 函数的实现是可选的。
+    }
+}
+</code></pre>
+
+### 实现接口
+
+一个类可以声明实现多个接口:
+
+<pre><code>
+class Child : MyInterface {
+    override fun bar() {
+        // body
+    }
+}
+</code></pre>
+
+### 接口中的属性
+
