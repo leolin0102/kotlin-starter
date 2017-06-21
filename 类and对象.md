@@ -372,12 +372,33 @@ val isEmpty: Boolean
 如果 ，我们想实现的属性访问函数没法使用辅助字段来实现，我们可以声明一个私有的辅助属性。
 
 <pre><code>
-private var _table: Map<String, Int>? = null
+private var _table: Map<String, Int>? = null //辅助属性
 public val table: Map<String, Int>
     get() {
         if (_table == null) {
-        _table = HashMap() // Type parameters are inferred
+        _table = HashMap() 
     }
-    return _table ?: throw AssertionError("Set to null by another thread")
+    return _table ?: throw AssertionError("table属性被其它线程释放") //由于getter 外部使用了_table，因此，我们没办法使用field的方式，在getter中为属性赋值。因此必须使用辅助属性。
 }
 </code></pre>
+
+辅助属性必须是私有的，因此，和java语言中访问私有属性的方式相同，且同样没有默认的getter和setter函数，因此，对辅助属性的访问，不会产生函数调用。
+
+### 编译时常量
+
+如果在编写代码的时候，一个属性的值就已经被确定，且不会再被改变（例如一些配置属性），则可以声明为编译时常量。我们可以为属性添加 "const" 来修饰。
+
+编译时常量必须满足以下条件：
+
+- 必须是全局或者属于一个对象
+- 类型必须是string或者其它原始类型
+- 没有自定义getter函数
+
+编译时常量可以用在注解中（配置属性）
+
+<pre><code>
+const val SUBSYSTEM_DEPRECATED: String = "This subsystem is deprecated"
+@Deprecated(SUBSYSTEM_DEPRECATED) fun foo() { ... }
+</code></pre>
+
+### 
