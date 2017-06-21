@@ -347,4 +347,37 @@ var setterWithAnnotation: Any? = null
 
 辅助字段 （Backing Field）
 
-Kotlin中的类是不支持字段的。但是，当我们自定义 setter 函数的时候，
+Kotlin中的类是不支持字段的。但是，当我们实现自定义 setter 函数的时候，我们需要一个辅助字段来访问property，当且仅当在setter中，我们可以使用关键字field来访问property。
+
+<pre><code>
+var counter = 0 // value 的值被直接赋值给property， 通过使用辅助字段
+    set(value) {
+        if (value >= 0) field = value
+    }
+</code></pre>
+
+field关键字仅可以在属性的访问函数（getter 和 setter）中使用。
+
+当我们在属性访问函数中使用field，或者至少自定义一个访问函数时，辅助字段会被自动生成。
+
+例如，下面这段代码中，field是不需要的
+
+<pre><code>
+val isEmpty: Boolean
+    get() = this.size == 0
+</cocde></pre>
+
+辅助属性 (Backing Property)
+
+如果 ，我们想实现的属性访问函数没法使用辅助字段来实现，我们可以声明一个私有的辅助属性。
+
+<pre><code>
+private var _table: Map<String, Int>? = null
+public val table: Map<String, Int>
+    get() {
+        if (_table == null) {
+        _table = HashMap() // Type parameters are inferred
+    }
+    return _table ?: throw AssertionError("Set to null by another thread")
+}
+</code></pre>
