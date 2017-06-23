@@ -451,3 +451,57 @@ class Child : MyInterface {
 
 ### 接口中的属性
 
+接口中也可以声明属性。可以声明抽象接口定义，或者提供自定义的访问器函数。接口中的属性不能使用辅助域变量，因此，接口中的访问器不可以使用。
+
+<pre><code>
+interface MyInterface {
+    val prop: Int // abstract
+    val propertyWithImplementation: String
+    get() = "foo"
+    fun foo() {
+        print(prop)
+    }
+}
+
+class Child : MyInterface {
+    override val prop: Int = 29
+}
+</code></pre>
+
+### 作用域标识
+
+类，对象，接口，构造函数，函数，属性和属性getter可以用作用域修饰来指定可见作用域。（Getter 的作用域与属性声明的作用域相同，不可以单独指定）一共有4中作用域：私有(private), 保护(protected), 内部(internal) 和 公共(public).未指名作用域的时候，默认的作用域是Public。
+
+#### 包作用域 (Packages)
+
+函数，属性，和类，类的对象和接口都可以被声明在Packages下。作为顶层元素。
+
+<pre><code>
+// file name: example.kt
+package foo
+
+fun baz() {}
+class Bar {}
+
+</code></pre>
+
+- 如果在包内的顶层声明的元素，没有指定任何作用域，则都为public，这些元素将全局可见。
+- 如果声明私有元素，则元素的作用域仅限于文件内部。
+- 如果我们定义internal，则此元素仅模块内可见（Kotlin中Model被定义为，一组源代码文件被独立的编译并打包到一起）。
+- 包的顶层元素不可以使用protected，因为protected主要用户在对象继承关系中，仅子类可见。因此，只在类内部使用。
+
+<pre><code>
+// file name: example.kt
+package foo
+
+private fun foo() {} // visible inside example.kt
+
+public var bar: Int = 5 // property is visible everywhere
+    private set // setter is visible only in example.kt
+
+internal val baz = 6 // visible inside the same module
+
+</code></pre>
+
+#### 类和接口作用域
+
