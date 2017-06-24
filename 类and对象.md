@@ -505,3 +505,51 @@ internal val baz = 6 // visible inside the same module
 
 #### 类和接口作用域
 
+在类中，可以使用 private，protected，internal和public全部这四种修饰。
+
+- private 私有作用域，进当前类可见。
+- protected 仅当前类和其子类可见。
+- internal 模块内可见。
+- public 对任何类可见。
+
+java开发者注意：在kotlin中，一个类的内部类的private元素对其宿主不可见。
+
+<pre><code>
+open class Outer {
+    private val a = 1
+    protected open val b = 2
+    internal val c = 3
+    val d = 4 // public by default
+
+    protected class Nested {
+        public val e: Int = 5
+    }
+}
+
+class Subclass : Outer() {
+    // a is not visible
+    // b, c and d are visible
+    // Nested and e are visible
+
+    override val b = 5 // 'b' is protected
+}
+
+class Unrelated(o: Outer) {
+    // o.a, o.b are not visible
+    // o.c and o.d are visible (same module)
+    // Outer.Nested is not visible, and Nested::e is not visible either
+}
+</code></pre>
+
+#### 构造函数
+
+为主要构造函数设置作用域的方式：
+
+<pre><code>
+class C private constructor(a: Int) { ... }
+</code></pre>
+
+未设置作用域时，主构造函数都为public，有时，如果一个类仅做工具类或者想确保全局仅有一个实例时，我们可以将构造函数私有化来禁止外面构造这个对象。
+
+#### 模块
+
