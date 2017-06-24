@@ -821,10 +821,11 @@ data class User(val name: String, val age: Int)
 </code></pre>
 
 编译器将会自动根据主构造函数的参数列表，自动生成下面的成员函数：
-- data对象的equals函数
+- data对象的equals 和 hashCode对
 - toString方法 返回内容如： "User(name=John, age=42)"
 - componentN() 一种根据索引N获取参数值的成员函数，编译器会根据类的属性声明的顺序来生成componentN()函数，例如，我们可以通过对User的实例 user 调用 user.component1() 来获得属性 name 的值。
 - copy 函数。
 
 如果上面的任何一个函数在当前类的body中定义，或者被子类重写，则编译器将不会生成默认实现。
 
+编译器自动生成的函数需要对数据对象提供一致性，完整性的支持。因此需要
