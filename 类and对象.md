@@ -553,3 +553,278 @@ class C private constructor(a: Int) { ... }
 
 #### 模块
 
+上面提过关键字internal作用域代表被修饰的元素尽在模块内可见。而一个模块为代码文件的集合，例如：
+- Intellig IDEA module
+- Maven或者gradle 的项目
+- 或者是一个ant task 打的jar
+
+##扩展（Extensions）
+
+和 C#，swift相似，Kotlin可以在不需要继承基类的情况下直接对类进行扩展，也不需要通过任何设计模式来实现逻辑的绑定和注入。（适配器）Kotlin可以实现函数扩展和属性扩展。尤其是有的时候我们无法修改我们依赖的模块内的对象，但是又想对其进行一定的扩展的时候，我们可以很轻松的大道我们的目标。
+
+### 函数扩展
+
+声明对函数的扩展，只需要在扩展函数的名字前面，使用被扩展类的名字作为前缀，并用.来分割。下面的例子将函数swap扩展到MutableList&lt;Int&gt;:
+
+<pre><code>
+fun MutableList&lt;Int&gt;.swap(index1: Int, index2: Int) {
+    val tmp = this[index1] // 'this' corresponds to the list
+    this[index1] = this[index2]
+    this[index2] = tmp
+}
+</code></pre>
+
+扩展函数内的this代表被扩展的类，现在我们为MutableList扩展了一个函数swap，现在我们可以调用这个扩展函数了。
+
+<pre><code>
+val l = mutableListOf(1, 2, 3)
+l.swap(0, 2) // 'this' inside 'swap()' will hold the value of 'l'
+</code></pre>
+
+上面函数中用到了范型（generic）。MutableList本身是个范型化的容器，函数扩展也可以同样用在范型中，例如上面的函数扩展可以改写为：
+
+<pre><code>
+fun &lt;T&gt; MutableList&lt;T&gt;.swap(index1: Int, index2: Int) {
+    val tmp = this[index1] // 'this' corresponds to the list
+    this[index1] = this[index2]
+    this[index2] = tmp
+}
+</code></pre>
+
+### 扩展的静态确定
+
+扩展函数对类的扩展是静态时确定的，即编译时，一方面，扩展函数并不是被添加到类上的，同时也不是动态的为类增加了虚拟的函数。Kotlin仅仅通过增加了一个函数，并使这个函数可以通过变量.调用到而已。
+
+由于扩展是静态确定的，因此，没有办法通过运行时根据对象的实际类型来确定调用的具体函数的实现。因此，只能通过写代码的时候，代码中的对象的类型，来确定调用哪个具体的扩展函数。就是说，子类扩展，是不能重载基类的扩展函数的，如果我们代码里声明的是基类类型的变量，则，只能调用到对基类的扩展函数。
+
+<pre><code>
+open class C
+
+class D: C()
+
+fun C.foo() = "c"
+
+fun D.foo() = "d"
+
+fun printFoo(c: C) { // 由于入参确定了类型为C， 因此即使我们传入的实际上是子类，只有C 类的扩展函数会被调用。
+    println(c.foo())
+}
+
+printFoo(D()) // 输出 "c"
+</code></pre>
+
+最终结果是输出c， 因为目标扩展函数是通过入参 c 的声明类型来确定的，变量 c 的类型是 C， 因此对C的扩展函数C.foo()将会被调用。
+
+如果类内成员函数已经有同名和相同入参的话，外部的同名相同入参的扩展函数会不起作用。例如：
+
+<pre><code>
+class C {
+    fun foo() { println("member") }
+}
+
+fun C.foo() { println("extension") }
+</code></pre>
+
+输出结果为"member"
+
+如果仅仅是名字相同，入参签名不同，则扩展函数可以起作用。
+
+<pre><code>
+class C {
+    fun foo() { println("member") }
+}
+fun C.foo(i: Int) { println("extension") }
+
+C().foo(1) //will print extension
+</code></pre>
+
+### 被扩展类可控
+
+扩展函数可以使用？声明被扩展对象（receiver）为可空类型，因为可以调用变量对象上的扩展函数，因此，变量本身有可能为空，可以使用？修饰扩展函数，并在函数内对this进行非空判断。
+
+下面的扩展允许我们可以放心的对任何对象变量调用toString()，不管变量是否为空。
+
+<pre><code>
+fun Any?.toString(): String {
+    if (this == null) return "null"
+
+    // after the null check, 'this' is autocast to a non-null type, so the toString() below
+    // resolves to the member function of the Any class
+    return toString()
+}
+</code></pre>
+
+### 扩展属性
+
+扩展属性和扩展函数非常相似：
+
+<pre><code>
+val <T> List<T>.lastIndex: Int
+    get() = size - 1
+</code></pre>
+
+因为扩展机制是静态决建立的，实际上扩展属性并不在类内部，因此，扩展属性是没有办法有辅助字端的。这是为什么构造函数内不可以应用扩展属性的原因。
+
+### 伙伴对象的扩展
+
+如果类中存在伙伴对象定义，我们同样可以对其进行函数扩展和属性扩展。
+
+<pre><code>
+class MyClass {
+    companion object { } // will be called "Companion"
+}
+
+fun MyClass.Companion.foo() {
+    // ...
+}
+</code></pre>
+
+对伙伴对象的调用方式与普通类的函数和属性没什么区别
+
+<pre><code>
+MyClass.foo()
+</code></pre>
+
+### 扩展的范围
+
+通常我们直接在包下面定义扩展。
+
+<pre><code>
+package foo.bar
+
+fun Baz.goo() { ... }
+</code></pre>
+
+如果想在包内使用包之外的扩展来扩展包内不的类，我们只需要对其进行导入，使用关键import。
+
+<pre><code>
+package com.example.usage
+
+import foo.bar.goo // 导入foo.bar.goo 包下的所有扩展
+
+// 或者
+
+import foo.bar.* // 从 "foo.bar" 导入所有元素，包括扩展，类，函数 
+
+
+fun usage(baz: Baz) {
+    baz.goo()
+)
+</code></pre>
+
+### 类内定义扩展
+
+可以在类内部定义对外部类的扩展，在扩展函数内可以访问到类本身的所有对象成员和函数，就像这个类里的其他成员函数一样。
+
+<pre><code>
+class D {
+    fun bar() { ... }
+}
+
+class C {
+    fun baz() { ... }
+    fun D.foo() {
+        bar() // calls D.bar
+        baz() // calls C.baz
+    }
+    fun caller(d: D) {
+        d.foo() // call the extension function
+    }
+}
+</code></pre>
+
+如果类内扩展函数调用的函数，在被扩展类中也被声明，存在冲突。则在冲突发生的时候，被扩展类的实现将被调用，如果我们想调用宿主类中的函数，则需要@符号后跟类名来区分。
+
+<pre><code>
+class C {
+    fun D.foo() {
+        toString() // 调用 D.toString()
+        this@C.toString() // 调用 C.toString()
+    }
+}
+</code></pre>
+
+类内部的函数扩展可以是open作用域的，且可以被子类重写。相当于，类中的成员扩展函数的实现取决于构造的是哪个类，基类还是子类，但是，对被扩展对象来说，其扩展函数的实现依然在静态时被确定。
+
+<pre><code>
+open class D {
+}
+
+classlass D1 : D() {
+}
+
+open class C {
+    open fun D.foo() {
+        println("D.foo in C")
+    }
+
+    open fun D1.foo() {
+        println("D1.foo in C")
+    }
+
+    fun caller(d: D) {
+        d.foo() // 静态时确定实现
+    }
+}
+
+class C1 : C() {
+
+    override fun D.foo() {
+        println("D.foo in C1")
+    }
+
+    override fun D1.foo() {
+        println("D1.foo in C1")
+    }
+
+}
+
+C().caller(D()) // prints "D.foo in C"
+C1().caller(D()) // prints "D.foo in C1" - caller函数静态确定调用D的扩展函数 foo() ,同时foo() 的实现被C1 类重写
+C().caller(D1()) // prints "D.foo in C" - caller函数静态时去定调用对D的扩展函数 C.foo() 的扩展
+</code></pre>
+
+### 使用扩展的动机
+
+在java语言中，我们有的时候会创建带有Utils后缀的类，用于放一些公共的无状态的静态工具函数。例如java中非常著名的集合工具类java.util.Collections中提供了一些工具函数来方便我们处理数据集。
+
+<pre><code>
+// Java
+Collections.swap(list, Collections.binarySearch(list, Collections.max(otherList)), Collections.max(list))
+</code></pre>
+
+如果我们使用java 静态导入这个类。（Kotlin没有静态导入的概念，不需要）如果曾经用java开发过elasticsearch的查询条件构造的话，就更佳熟悉了。
+
+<pre><code>
+static import java.util.Collection.*
+// java
+swap(list, binarySearch(list, max(otherList)), max(list)) //函数实现是由Collection提供，因为交换需要对list对象进行操作，所以入参需要也将list本身作为参数传递给swap函数。
+</code></pre>
+
+使用Kotlin扩展，我们可以将这样的函数直接扩展到对象，我们可以直接对变量进行函数调用。而如果想在Java里实现下面的效果，我们就只能通过实现一个List类，并实现基类里的所有必需被子类实现的抽象函数。因为List本身是抽象类，里面定义了很多抽象函数。
+
+<pre><code>
+
+func List.swap(list: List) {}
+
+list.swap(list.binarySearch(otherList.max()), list.max())
+</code></pre>
+
+通过上面的写法，我们仅仅需要实现一个函数，并扩展到了所有List类的实例上。
+
+## 数据类 （Data Class）
+
+在面向对象编程思想中，倾向于为每一个数据格式定义一个类，仅仅封装结构化数据，并提供一些机械化的成员函数，大部分java程序员都熟知如何用IDE的快捷键来快速生成这些机械化的代码。在Kotlin中可以仅仅使用data关键字来声明一个类，就可以了，连使用快捷键的操作都是多余的。
+
+<pre><code>
+data class User(val name: String, val age: Int)
+</code></pre>
+
+编译器将会自动根据主构造函数的参数列表，自动生成下面的成员函数：
+- data对象的equals函数
+- toString方法 返回内容如： "User(name=John, age=42)"
+- componentN() 一种根据索引N获取参数值的成员函数，编译器会根据类的属性声明的顺序来生成componentN()函数，例如，我们可以通过对User的实例 user 调用 user.component1() 来获得属性 name 的值。
+- copy 函数。
+
+如果上面的任何一个函数在当前类的body中定义，或者被子类重写，则编译器将不会生成默认实现。
+
