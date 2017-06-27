@@ -829,3 +829,42 @@ data class User(val name: String, val age: Int)
 如果上面的任何一个函数在当前类的body中定义，或者被子类重写，则编译器将不会生成默认实现。
 
 编译器自动生成的函数需要对数据对象提供一致性，完整性。数据类需要满足一下几点：
+- 主构造函数必须至少有一个属性参数。
+- 所有主构造函数的属性必须用val 或者 var 来标记
+- 对象类不可以是抽象类，open作用域，封闭类和内部类。（下一接会介绍封闭类）
+- 在kotlin 1.1之前，数据类只能作为接口的实现
+
+如果是在JVM上运行，则必须为数据类的所有构造函数的属性指定默认值。
+
+<pre><code>
+data class User(val name: String = "", val age: Int = 0)
+</code></pre>
+
+### 数据类的copy
+
+数据类自动生成的copy函数可以实现在对对象的克隆的同时，允许我们更改部分属性的值，这会给我们编写函数式风格的程序带来极大的帮助。在函数式编程中，一个函数不改变外部变量，一个函数仅仅是对一个特定输入属性的特定处理，并返回结果。因此，函数式编程不提倡直接改变对象的值来影响函数外，而是通过copy并改变copy后的对象，并作为处理结果返回出来。这样每一个函数都是线程安全的，不需要额外的使用同步来保证线程安全。同时，也非常容易被测试，因此每一个输入，都有唯一的一个结果。而在Swift开发中，就没有这样的特性，因此我们会编写很多辅助函数，一般叫做透镜，来完成类似的逻辑。但是在Kotlin中，仅仅只需要一个关键字 data，太轻松了。
+
+后面我们会介绍相应式函数编程（FRN），来为大家介绍一套比较完善的框架来实现状态管理和功能分离，通过信号绑定来实现与面向对象一样灵活的开发模式。
+
+编译器自动生成的copy函数例子：
+
+<pre><code>
+fun copy(name: String = this.name, age: Int = this.age) = User(name, age)
+</code></pre>
+
+因此我们可以像下面的代码一样，改变age的值，并产生一个新的对象：
+
+<pre><code>
+val jack = User(name = "Jack", age = 1)
+val olderJack = jack.copy(age = 2)
+</code></pre>
+
+### 数据类对象属性的拆包赋值 (Destructuring Declarations)
+
+数据类自动生成的componentN函数的作用之一是辅助完成属性的拆包赋值:
+
+<pre><code>
+val jane = User("Jane", 35)
+val (name, age) = jane
+println("$name, $age years of age") // prints "Jane, 35 years of age"
+</code></pre>
