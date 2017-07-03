@@ -962,9 +962,67 @@ void copyAll(Collection&lt;Object&gt; to, Collection&lt;String&gt; from) {
 
 <pre><code>
 // Java
-interface Collection<E> ... {
-    void addAll(Collection<? extends E> items);
+interface Collection&lt;E&gt; ... {
+    void addAll(Collection&lt;? extends E&gt; items);
 }
 </code></pre>
 
-我们可以定义一个简单的原则，如果你只从容器里获取对象，则可以使用
+我们可以定义一个简单的原则，如果你只从容器里获取对象，则可以使用类型转换将String容器转换成Object容器，并从中读取对象。反过来，如果我们将String对象写入Object集合，也是可以的。在java中可以定义  List&lt;? super String&gt; 为List&lt;Object&gt;的子类，我们称作逆变换。
+
+### 编译时类型转换
+
+假如我们定义范型接口 Iterator&lt;T&gt; 其中没有函数以T类型作为入参，仅仅含有一个返回类型为T的函数next。
+
+<pre><code>
+// Java
+interface Iterator&lt;T&gt; {
+    T nextT();
+}
+</code></pre>
+
+这样的场景下，将Iterator&lt;String&gt;类型转换成一个Iterator&lt;Object&gt;属性并使用是安全的，因为没有函数会试图像容器中添加对象。但是下面这种情况依然是不允许的：
+
+<pre><code>
+// Java
+void demo(Iterator&lt;String&gt; strs) {
+    Iterator&lt;Object&gt; objects = strs; // !!! 在java中，这样赋值是不允许的
+    // ...
+}
+</code></pre>
+
+为了解决这个问题，我们必须将迭代器声明为Iterator&lt;? extends Object&gt;,这样我们可以放入任何Object对象的子类，同时模板类中，仅调用对Object类型的代码，但是，我们不能再把这个迭代器再转化到Iterator&lt;String&gt;了，因为不确定Object容器内存放的是否都是String类型。
+
+在Kotlin中，有一种方式可以告知编译器。就是编译时类型转换：我们可以对Iterator的类型参数前增加一个注解来告知编译器保证范型类型仅仅作为函数的结果返回类型,但是不会作为函数的入参。
+
+<pre><code>
+abstract class Iterator&lt;out T&gt; {
+    abstract fun nextT(): T
+}
+
+fun demo(strs: Iterator&lt;String&gt;) {
+    val objects: Iterator&lt;Any&gt; = strs // This is OK, since T is an out-parameter
+    // ...
+}
+</code></pre>
+
+out T 的含义就是告诉编译器，我们只会从迭代器中获取数据，但是不会像Iterator中添加对象。（只出不进）编译时类型转换，实际上含义是，我们在编写代码的时候确定通过out属性告诉编译器，我们不会试图像像容器中添加对象。
+
+与out相呼应的是in注解，in注解用来在编译的时候告知编译器，相应的属性是可逆变的。含义与out相反，in修饰的属性仅仅能作为方法的入参，不能作为结果返回。例如：Comparable
+
+<pre><code>
+abstract class Comparable&lt;in T&gt; {
+    abstract fun compareTo(other: T): Int
+}
+
+fun demo(x: Comparable&lt;Number&gt;) {
+    x.compareTo(1.0) // 1.0 has type Double, which is a subtype of Number
+    // Thus, we can assign x to a variable of type Comparable&lt;Double&gt;
+    val y: Comparable&lt;Double&gt; = x // OK!
+}
+</code></pre>
+
+上面代码中因为Comparable不存在以T为结果返回的函数，因此我们可以将Comparable&lt;Number&gt;赋值给Comparable&lt;Double&gt;的属性。因为Double是Number的子类型，只要子类型的容器只消费这个对象，并不将对象通过函数调用结果传递给容器外，就不会造成任何问题。
+
+### 类型推测
+
+类型推测是编译器在容器被使用的时候，通过上下文推测出范型参数的类型的方式。
