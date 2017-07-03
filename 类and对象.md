@@ -966,3 +966,5 @@ interface Collection<E> ... {
     void addAll(Collection<? extends E> items);
 }
 </code></pre>
+
+我们可以定义一个简单的原则，如果你只从容器里获取对象，则可以使用
