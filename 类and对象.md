@@ -923,5 +923,46 @@ println("print box value: $box.i")
 val box = Box(1)
 </code></pre>
 
-### 变异
+### 类型转换 (Variance)
 
+java中有种巧妙的机制，叫通配符(wildcard) List&lt;? extends E&gt;，这样，任何继承自类型E的对象，都可以放入这个列表中去。Kotlin没有这样的机制，Kotlin引入两种机制来替代通配符：编译时变形和类型预测。
+
+使用通配符的目的是使得我们写的代码有更好的可扩展性，&lt;? extends E&gt;代表匹配所有E的子类，但是我们在模板内部代码，仅仅只针对E来编写代码，也就是面向抽象层编写自己的模板，但是对于构造模板类的地方，则可以面向具体的实现来编写，构造的地方是确定构造的模板对象是针对那个具体的类型的，因此，可以减少很多强制类型转换，也使得模板类不仅仅可以出类E类型，也可以处理所有E的子类。
+
+但是，java通配符也存在限制，首先通配符模板类是不可以类型转换的，例如List&lt;String&gt;不是List&lt;Object&gt;。如果允许这样的类型转换，意味着，转换后的List容器可以放入所有类型，而不仅仅只是String。因此下面的代码，将会在运行时抛出异常。（ClassCastException）
+
+<pre><code>
+// Java
+List&lt;String&gt; strs = new ArrayList&lt;String&gt;();
+List&lt;Object&gt; objs = strs; // !!! 实际上java是不允许这样的类型转换的，如果允许，则会存在接下来的异常的可能!
+objs.add(1); // 我们这里在数组的最前面添加了一个Int 类型的对象。
+String s = strs.get(0); // !!! ClassCastException: Cannot cast Integer to String
+</code></pre>
+
+上面的例子是为了说明，如果允许类型转换为什么会带来因为。实际上java是禁止这样的类型转换，以此来避免运行时的异常。但是这样限制也有一些不便，例如，我们看一下java中的Collection接口中的addAll()函数。addAll函数的定义是什么？比较直接的定义方式是：
+
+<pre><code>
+// Java
+interface Collection&lt;E&gt; ... {
+    void addAll(Collection&lt;E&gt; items);
+}
+</code></pre>
+
+但是这个接口是不能在下面的场景中工作的。
+
+<pre><code>
+// Java
+void copyAll(Collection&lt;Object&gt; to, Collection&lt;String&gt; from) {
+    to.addAll(from); // !!! 这里无法通过编译 addAll:
+    //Collection&lt;String&gt; 并不是 Collection&lt;Object&gt; 的子类
+}
+</code></pre>
+
+因此实际上，java中Collection的addAll是这样定义的：
+
+<pre><code>
+// Java
+interface Collection<E> ... {
+    void addAll(Collection<? extends E> items);
+}
+</code></pre>
