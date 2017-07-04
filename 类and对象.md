@@ -1106,8 +1106,122 @@ fun &lt;T : Comparable&lt;T&gt;&gt; sort(list: List&lt;T&gt;) {
 
 <pre><code>
 sort(listOf(1, 2, 3)) // OK. Int is a subtype of Comparable&lt;Int&gt;
-sort(listOf(HashMap&lt;Int, String&gt;())) // Error: HashMap&lt;Int, String&gt; is not a subtype of Comparable&ltHashMap&lt;Int, String&gt;&gt;
+sort(listOf(HashMap&lt;Int, String&gt;())) // Error: HashMap&lt;Int, String&gt; is not a subtype of Comparable&lt;HashMap&lt;Int, String&gt;&gt;
 </code></pre>
 
 因为HashMap并未实现或者继承自Comparable接口，因此，HashMap&lt;Int, String&gt;不是Comparable&lt;HashMap&lt;Int, String&gt;&gt;的子类型。
+
+## 内嵌类
+
+我们可以在一个类内部声明一个内嵌类，声明内嵌类，一是可以空置其生命周期，而是可以空置可见范围。当内嵌类的类型为内部类（Inner Class）时，只有外层类实例在的时候，内部类才能存在，因此可以在内部类直接方便引用外部类的属性和调用方法。
+
+### 内部类
+
+内部类使用inner关键字定义，下面的代码实现了一个内部类，提供foo函数将外层类实例中的bar属性传递出去。
+
+<pre><code>
+class Outer {
+    private val bar: Int = 1
+    inner class Inner {
+        fun foo() = bar //内部类直接引用外层属性，好像内部类Inner本身就是Outer的一部分
+    }
+}
+
+val demo = Outer().Inner().foo() // == 1
+</code></pre>
+
+### 匿名内部类
+
+有些时候一些很轻量的，没有重用需求的接口实现，我们没有必要创建一个专门的类来容纳接口的实现，我们可以使用object关键字来生成一个匿名内部类：
+
+<pre><code>
+window.addMouseListener(object: MouseAdapter() {
+
+    override fun mouseClicked(e: MouseEvent) {
+        // ...
+    }
+
+    override fun mouseEntered(e: MouseEvent) {
+        // ...
+    }
+})
+</code></pre>
+
+如果要实现的接口仅仅只有一个抽象方法，则我们可以使用接口类型后跟一个lambda表达式来定义匿名内部类。
+
+<pre><code>
+val listener = ActionListener { println("clicked") }
+</code></pre>
+
+## 枚举类
+
+有的时候，一个类的某一写属性是有限个数的一组值，例如，定义一个属性代表方向，且仅有 NORTH, SOUTH, WEST, EAST 这四种值，而一个组建的背景色可能只能取RED, GREEN, BLUE。这个时候，我们可以定义枚举类来限定一个属性的值的范围，且我们可以通过初始化枚举类来给每个值设定一个可读的含义。
+
+<pre><code>
+enum class Direction {
+    NORTH, SOUTH, WEST, EAST
+}
+</code></pre>
+
+这样我们可以在我们的类中，定义一个代表方向的属性，其类型为Direction类型。
+
+<pre><code>
+
+
+fun tackAction(direction: Direction) {
+    val defaultDirection = Direction.EAST
+    when (direction) {
+        Direction.NORTH -&gt; println(direction)
+        Direction.SOUTH -&gt; println(direction)
+        Direction.WEST -&gt; println(direction)
+        else -> { println(defaultDirection) }
+    }
+
+}
+
+tackAction(Direction.WEST) //打印 WEST
+
+</code></pre>
+
+### 初始化
+因为枚举类型本身是一个类，因此，枚举类可以又构造函数和方法,唯一的区别是，枚举类的构造是发生在类体中：
+
+<pre><code>
+enum class Color(val rgb: Int) {
+    RED(0xFF0000),
+    GREEN(0x00FF00),
+    BLUE(0x0000FF)
+}
+
+println(Color.RED) // 打印0xFF0000
+</code></pre>
+
+### 匿名类
+
+枚举类可以定义自己的匿名类，一般当一个内幕类定义了抽象函数要求每一个枚举类实例都实现的时候，我们可以在枚举类中定义抽象函数，例如：下面的例子实现一个非常简单的状态控制模型，每个状态都必须通过实现signal函数来指定下一个状态值。我们可以通过定义匿名类来为每一个状态提供signal的实现。
+
+<pre><code>
+enum class ProtocolState {
+    WAITING {
+        override fun signal() = TALKING
+    },
+
+    TALKING {
+        override fun signal() = WAITING
+    };
+
+    abstract fun signal(): ProtocolState
+}
+</code></pre>
+
+和java一样，枚举类提供方法来获取枚举类中实例的列表，以及通过名字获取枚举值的方法。
+
+<pre><code>
+EnumClass.valueOf(value: String): EnumClass
+EnumClass.values(): Array&lt;EnumClass&gt;
+</code></pre>
+
+要注意的是，如果value对应的枚举实例名字不存在，则会抛出运行时不须查异常 IllegalArgumentException。
+
+## 对象表达式和声明
 
