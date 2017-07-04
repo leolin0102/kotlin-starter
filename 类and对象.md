@@ -1025,4 +1025,61 @@ fun demo(x: Comparable&lt;Number&gt;) {
 
 ### 类型推测
 
-类型推测是编译器在容器被使用的时候，通过上下文推测出范型参数的类型的方式。
+类型推测是编译器在容器被使用的时候，通过上下文推测出范型参数的类型的方式。有的时候，我们实现的模板类没有办法保证只返回类型T，例如:
+
+<pre><code>
+class Array&lt;T&gt;(val size: Int) {
+    fun get(index: Int): T { /* ... */ }
+    fun set(index: Int, value: T) { /* ... */ }
+}
+</code></pre>
+
+这个范型类不是非常的灵活，当我们实现一个数组拷贝函数的时候，我们同样只能实现两个Any的数组间的copy，但是我们没法通过范型指定任何Any的子类的数组copy到Any的数组中。
+
+<pre><code>
+fun copy(from: Array&lt;Any&gt;, to: Array&lt;Any&gt;) {
+    assert(from.size == to.size)
+    for (i in from.indices)
+        to[i] = from[i]
+}
+
+val ints: Array&lt;Int&gt; = arrayOf(1, 2, 3)
+val any = Array&lt;Any&gt;(3) { "" }
+copy(ints, any) // Error: 这里会抛出ClassCaseException异常。
+</code></pre>
+
+在Kotlin中，我们可以通过使用时类型转换来解决这个问题，即不再Array类的参数上使用out，而是在使用这个模板的函数上使用out，以上面的copy为例，我们只需要在from数组上使用out就可以解决上面发生的异常。
+
+<pre><code>
+fun copy(from: Array&lt;out Any&gt;, to: Array&lt;Any&gt;) {
+    // ...
+}
+</code></pre>
+
+同样，kotlin也支持使用时逆变，即在使用模板的函数中使用in关键字。例如我们若要实现使用默认值填充整个数组：
+
+<pre><code>
+fun fill(dest: Array&lt;in String&gt;, value: String) {
+    // ...
+}
+</code></pre>
+
+这里使用in是因为，数组本身是Any类型的，fill函数本身并不从数组里获取对象，仅仅是将Any的子类String类型的对象赋值给数组中，也就是，dest数组仅仅消费value，但是不产出value。
+
+
+### 函数范型
+
+Kotlin的特点是函数式编程与面向对象编程正交，即同时存在且不相互产生副作用，因此，面向对象中的范型也被延伸到了函数中。
+
+我们可以定义函数的范型：
+
+<pre><code>
+fun &lt;T : Comparable&lt;T&gt;&gt; sort(list: List&lt;T&gt;) {
+    // ...
+}
+</code></pre>
+只有Comparable&lt;T&gt;和其子类才可以作为sort函数中T的确定类型，例如：
+<pre><code>
+sort(listOf(1, 2, 3)) // OK. Int is a subtype of Comparable&lt;Int&gt;
+sort(listOf(HashMap<Int, String>())) // Error: HashMap&lt;Int, String&gt; is not a subtype of Comparable&lt;HashMap&lt;Int, String&gt;&gt;
+</code></pre>
