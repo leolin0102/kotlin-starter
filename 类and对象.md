@@ -1083,3 +1083,4 @@ fun &lt;T : Comparable&lt;T&gt;&gt; sort(list: List&lt;T&gt;) {
 sort(listOf(1, 2, 3)) // OK. Int is a subtype of Comparable&lt;Int&gt;
 sort(listOf(HashMap<Int, String>())) // Error: HashMap&lt;Int, String&gt; is not a subtype of Comparable&lt;HashMap&lt;Int, String&gt;&gt;
 </code></pre>
+
