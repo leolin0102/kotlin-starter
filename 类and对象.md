@@ -1074,13 +1074,40 @@ Kotlin的特点是函数式编程与面向对象编程正交，即同时存在�
 我们可以定义函数的范型：
 
 <pre><code>
+fun &lt;T&gt; singletonList(item: T): List&lt;T&gt; {
+    // ...
+}
+
+fun &lt;T&gt; T.basicToString() : String { // extension function
+    // ...
+}
+</code></pre>
+
+与类不同，函数的类型参数，不单可以是函数的入参的类型，也可以作为对类型的扩展函数。singletonList函数声明输入T类型作为入参，返回容纳T类型的List，而basicToString的前面T代表将此函数扩展到T类上。
+
+调用范型函数，我们需要在调用的时候，在函数名后面指定具体的类型：
+
+<pre><code>
+val l = singletonList&lt;Int&gt;(1)
+</code></pre>
+
+
+### 上界限制 （Upper bounds）
+
+在开发中最普遍的约束限制就是指定范型类型的上界限制，上界限值对应java中的 extends 关键字：
+
+<pre><code>
 fun &lt;T : Comparable&lt;T&gt;&gt; sort(list: List&lt;T&gt;) {
     // ...
 }
 </code></pre>
-只有Comparable&lt;T&gt;和其子类才可以作为sort函数中T的确定类型，例如：
+
+值得一提的是，这里的范型是双重约束，即首先list的类型必须是T的子类，且T必须是Comparable&lt;T&gt;的子类。例如：
+
 <pre><code>
 sort(listOf(1, 2, 3)) // OK. Int is a subtype of Comparable&lt;Int&gt;
-sort(listOf(HashMap<Int, String>())) // Error: HashMap&lt;Int, String&gt; is not a subtype of Comparable&lt;HashMap&lt;Int, String&gt;&gt;
+sort(listOf(HashMap&lt;Int, String&gt;())) // Error: HashMap&lt;Int, String&gt; is not a subtype of Comparable&ltHashMap&lt;Int, String&gt;&gt;
 </code></pre>
+
+因为HashMap并未实现或者继承自Comparable接口，因此，HashMap&lt;Int, String&gt;不是Comparable&lt;HashMap&lt;Int, String&gt;&gt;的子类型。
 
