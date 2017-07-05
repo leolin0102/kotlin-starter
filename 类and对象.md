@@ -1338,6 +1338,93 @@ object DefaultListener : MouseAdapter() {
 
 我们对单例的态度，应该是我会用这个设计模式，但是，我会选择在正确的地方来使用，而不是，所有的地方。
 
-### 半生对象
+### 伙伴对象
 
-当我们在实现一个类的时候，可能
+对象可以声明在一个类的内部，作为伙伴对象，伙伴对象使用companion来定义。
+
+<pre><code>
+class MyClass {
+    companion object Factory {
+        fun create(): MyClass = MyClass()
+    }
+}
+</code></pre>
+
+可以通过类名来访问伙伴对象。
+
+<pre><code>
+val instance = MyClass.create()
+</code></pre>
+
+伙伴类声明的时候可以不指定名字，这个时候，可以使用缺省的名字Companion来引用：
+
+<pre><code>
+class MyClass {
+    companion object {
+    }
+}
+
+val x = MyClass.Companion
+</code></pre>
+
+这里，虽然看起来伙伴对象看起来更像是其它语言中的静态成员，但是实际上在Kotlin中，它是个对象，仍然可以实现其它接口。
+
+<pre><code>
+interface Factory&lt;T&gt; {
+    fun create(): T
+}
+
+class MyClass {
+    companion object : Factory&lt;MyClass&gt; {
+        override fun create(): MyClass = MyClass()
+    }
+}
+</code></pre>
+
+### 对象表达式和生命的区别
+
+- 对象表达式在使用的地方会被立即执行。就是定义的地方。
+- 对象声明是懒加载的，只有在第一次应用的时候被初始化。
+- 伙伴对象初始化发生在宿主类被加载，相当于java中的静态初始化。
+
+## 代理 （Delegation）
+
+### 代理类
+
+代理模式是一种更灵活的替代继承的代码重用，因为代理模式可以实现多继承，也可以在运行时改变被代理的接口的实现，来动态调整代理类的行为。
+
+<pre><code>
+
+//代理类实现，Window调用Rectangle类的同名函数，即Rectangle.area()作为Window.area()的代理。
+class Rectangle(val width:Int, val height:Int) {
+    fun area() = width * height
+}
+
+class Window(val bounds:Rectangle) {
+    // Delegation
+    fun area() = bounds.area()
+}
+</code></pre>
+
+而实际上Kotlin内部支持我们不添加额外代码的情况下支持代理模式：
+
+<pre><code>
+interface Base {
+    fun print()
+}
+
+class BaseImpl(val x: Int) : Base {
+    override fun print() { print(x) }
+}
+
+class Derived(b: Base) : Base by b
+
+fun main(args: Array<String>) {
+    val b = BaseImpl(10)
+    Derived(b).print() // prints 10
+}
+</code></pre>
+
+ by 后面跟的吧同时也是Derived类的构造函数的入参，表名b会被保存在Derived类的内部，同时编译器将会自动根据接口定义的函数签名生成代理调用代码。
+
+### 代理属性
