@@ -1519,3 +1519,21 @@ fun main(args: Array<String>) {
 
 &lt;no name&gt; -&gt; first
 first -&gt; second
+
+ #### 用Map保存属性值
+
+我们有时需要把属性值保存到Map中，比如实现ORM框架中的数据Bean，或者利用反射机制将对象串行化成Json串。我们可以直接使用Map作为属性的Delegate提供属性代理的实现。
+
+<pre><code>
+class User(val map: Map&lt;String, Any?&gt;) {
+    val name: String by map
+    val age: Int by map
+}
+
+val user = User(mapOf(
+    "name" to "John Doe",
+    "age" to 25
+))
+</code></pre>
+
+
