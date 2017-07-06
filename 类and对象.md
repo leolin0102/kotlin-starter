@@ -1496,7 +1496,7 @@ fun main(args: Array<String>) {
 当第一次调用打印lazyValue属性的时候，会现输出computed! 然后紧跟着Hello，但当第二次调用打印lazyValue属性的时候，并未输出computed!，这代表第二次直接取的属性的值，而不会再调用构造逻辑。
 
 #### 可观察属性
-
+   
 Kotlin标准库提供 Delegates.observable() 方法，observable方法接受两个参数，属性的初始值以及属性变更通知的回调函数。每当被观察的属性改变的时候，回调函数就会被调用。回调函数接受三个参数，分别是属性名，修改前的值和修改后的值。下面的代码使用闭包来实现handler：
 
 <pre><code>
