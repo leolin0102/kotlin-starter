@@ -1428,3 +1428,94 @@ fun main(args: Array<String>) {
  by 后面跟的吧同时也是Derived类的构造函数的入参，表名b会被保存在Derived类的内部，同时编译器将会自动根据接口定义的函数签名生成代理调用代码。
 
 ### 代理属性
+
+针对属性有一些通用的需求，有的时候，我们很需要使得我们定义的属性具有这些通用的特性，如果我们能通过通用库来统一实现，会极大的方便我们的开发。
+- 懒加载属性：属性的值在第一此被访问的时候才确定。
+- 观察者属性：监听并可以在属性被改变的时候得到通知。
+- 使用字典保存属性，并通过属性get方法获取。
+
+Kotlin 代理属性：
+
+<pre><code>
+class Example {
+    var p: String by Delegate()
+}
+</code></pre>
+
+声明代理属性的语法是：val/var &lt;property name&gt;: &lt;Type&gt; by &lt;expression&gt; by 关键字后面跟属性代理的实现。这里我们需要代理实现getValue()和setValue(),属性的代理可以不实现任何接口，但是，必须提供getValue()和setValue()，例如：
+
+<pre><code>
+class Delegate {
+    operator fun getValue(thisRef: Any?, property: KProperty<*>): String {
+        return "$thisRef, thank you for delegating '${property.name}' to me!"
+    }
+    operator fun setValue(thisRef: Any?, property: KProperty<*>, value: String) {
+        println("$value has been assigned to '${property.name} in $thisRef.'")
+    }
+}
+</code></pre>
+
+这样，当我们访问Example类属性p时，代理方法会被调用：
+
+<pre><code>
+val e = Example()
+println(e.p)
+
+// 程序会打印，Example@33a17727, thank you for delegating ‘p’ to me!
+</code></pre>
+
+### 标准代理类库
+
+Kotlin标准库为常用属性特性提供支持。
+
+#### 懒加载
+
+我们可以通过属性声明后跟 by lazy { body }实现属性的懒加载功能。懒加载特性可以帮助我们优化启动时间，并不是所有的属性，都要第一事件被初始化，但有的时候我们在编写代码的时候，很难确定初始化属性的实际，如果过晚就可能导致空指针异常。
+
+下面的例子来演示如何实现懒加载属性：
+
+<pre><code>
+val lazyValue: String by lazy {
+    println("computed!")
+    "Hello"
+}
+
+fun main(args: Array<String>) {
+    println(lazyValue)
+    println(lazyValue)
+}
+
+// 运行程序将会打印
+// computed!
+// Hello
+// Hello
+</code></pre>
+
+声明属性的时候，我们同时提供了稍后初始化属性的代码，但是并未立即执行。
+
+当第一次调用打印lazyValue属性的时候，会现输出computed! 然后紧跟着Hello，但当第二次调用打印lazyValue属性的时候，并未输出computed!，这代表第二次直接取的属性的值，而不会再调用构造逻辑。
+
+#### 可观察属性
+
+Kotlin标准库提供 Delegates.observable() 方法，observable方法接受两个参数，属性的初始值以及属性变更通知的回调函数。每当被观察的属性改变的时候，回调函数就会被调用。回调函数接受三个参数，分别是属性名，修改前的值和修改后的值。下面的代码使用闭包来实现handler：
+
+<pre><code>
+import kotlin.properties.Delegates
+class User {
+    var name: String by Delegates.observable("&lt;no name&gt;") {
+        prop, old, new ->
+        println("$old -> $new")
+    }
+}
+
+fun main(args: Array<String>) {
+    val user = User()
+    user.name = "first"
+    user.name = "second"
+}
+</code></pre>
+
+运行代码，会打印
+
+&lt;no name&gt; -&gt; first
+first -&gt; second
