@@ -1,15 +1,15 @@
 # 为什么选择Kotlin
 
-Kotlin是一个以Java平台为基础的全新的语言，就像Groovy或scala那样，他们都可以运行在JVM上，并且都几乎可以零成本的与已有的java库相互融合。但不同的是，Kotlin的代码也可以以javascript的形式运行，现在，Kotlin也可以通过LLVM实现的Kotlin编译器生成本地库来支持IOS平台的运行。
+Kotlin是一个以Java平台为基础的全新的语言，就像Groovy或scala那样，他们都可以运行在JVM上，并且可以零成本的与已有的java库相互融合。但不同的是，Kotlin的代码也可以以javascript的形式运行。现在，Kotlin还可以通过LLVM实现的Kotlin编译器生成本地库来支持IOS平台的运行。
 
-Kotlin是一种简洁的，安全的（静态强类型），实用的 且可以和java代码相互融合的语言，这使得成熟的项目也可以平滑的过度到Kotlin语言上，同时避免我们被迫重新实现一些本来被维护的非常好的java库资源。Kotlin的代码运行的性能与Java代码相当，因此，我们不用在运用Kotlin的强大的特性来提高我们开发效率的同时，会引入额外的性能风险（当然，是在我们的设计本身没问题的情况下。）
+Kotlin是一种简洁的，安全的（静态强类型），实用的，且可以和java代码相互融合的语言，这使得成熟的项目也可以平滑地过度到Kotlin语言上，同时避免我们被迫重新实现一些本来被维护的非常好的java库资源。Kotlin的代码运行的性能与Java代码相当，因此，我们在运用Kotlin的强大特性来提高我们开发效率的同时，无须担心会引入额外的性能风险（当然，是在我们的设计本身没有缺陷的情况下。）
 
-丰富的表达能力：Kotlin语言是一个函数试编程和面向对象编程正交的语言，同时支持一些全新的语法特性，例如type-safe builder, delegated properties。这些特性可以帮助我们构建功能强大且易于使用，易于扩展且易于维护的组件。
+丰富的表达能力：Kotlin语言是一个函数式编程和面向对象编程正交的语言，同时支持一些全新的语法特性，例如type-safe builder, delegated properties。这些特性可以帮助我们构建功能强大，且易于使用、扩展和维护的组件。
 
 ## 一个Kotlin程序的样子
 
 让我们从一个简单的例子，来看一下Kotlin语言的风格。这个例子定义了一个People类和一个存放People实例的集合，以及一个实现从集合中找到年纪最大的一个人的实例。
-注：这里我引用了Kotlin In Action中的这个例子，我觉得这个例子足够体现一个Kotlin风格的的代码的样子，这个例子虽然小，但是却融合的表达式，函数试编程，data class（Kotlin 特有的数据类）。最有意思的是，代码仅仅只有几行，很神奇。大家可以在下面这个链接中运行这个程序。
+注：这里我引用了Kotlin In Action中的这个例子，我觉得这个例子足够体现一个Kotlin风格代码的样子。这个例子虽小，但却包含了lambda表达式、函数式编程和data class（Kotlin特有的数据类）。最有意思的是，代码仅寥寥几行。大家可以在下面这个链接中运行这个程序。
 
 https://try.kotl.in/#/Kotlin%20in%20Action/Chapter%201/1.1/1.1_ATasteOfKotlin.kt
 
@@ -30,7 +30,7 @@ fun main(args: Array<String>) {
 
 </code></pre>
 
-- data 关键字修饰类时，Kotlin编译器自动会帮助我们生成一个Data Entry所必需的实现，Java开发者如果使用过Lambok框架和IDE插件的话，应该一下子明白编译器会对Data Class生成什么代码了，这个地址提供了一个视频，来展现Lombok中@Data注解替我们都做了什么（https://projectlombok.org/）。现在使用Kotlin，我们可以不需要额外安装插件和库，仅仅使用data就可以实现这一切。
+- 当data关键字修饰类时，Kotlin编译器会自动帮我们生成一个Data Entry所必需的实现。Java开发者如果使用过Lambok框架和IDE插件的话，应该瞬间明白编译器会对Data Class生成什么代码了，这个地址提供了一个视频，来展现Lombok中@Data注解替我们都做了什么（https://projectlombok.org/）。现在使用Kotlin，我们可以不需要额外安装插件和库，仅仅使用data就可以实现这一切。
 
 - persons.maxBy { ... } 使用了lambdas表达式，Higher-Order-Function的概念，如果是用Java实现，我们需要做更多的工作了。其实非常多，且函数试的实现更佳优雅（优雅可能已经被身边的很多写程序的人用烂了，但是这这里用这个词我认为是对的）
 
