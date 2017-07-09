@@ -1,6 +1,170 @@
 # 为什么选择Kotlin
 
-丰富的表达能力：Kotlin语言是一个函数试编程和面向对象编程正交的语言，同时支持一些全新的语法特性，例如type-safe builder, delegated properties。这些特性可以帮助我们构建功能强大且易于使用和维护的抽象组件。
+Kotlin是一个以Java平台为基础的全新的语言，就像Groovy或scala那样，他们都可以运行在JVM上，并且都几乎可以零成本的与已有的java库相互融合。但不同的是，Kotlin的代码也可以以javascript的形式运行，现在，Kotlin也可以通过LLVM实现的Kotlin编译器生成本地库来支持IOS平台的运行。
+
+Kotlin是一种简洁的，安全的（静态强类型），实用的 且可以和java代码相互融合的语言，这使得成熟的项目也可以平滑的过度到Kotlin语言上，同时避免我们被迫重新实现一些本来被维护的非常好的java库资源。Kotlin的代码运行的性能与Java代码相当，因此，我们不用在运用Kotlin的强大的特性来提高我们开发效率的同时，会引入额外的性能风险（当然，是在我们的设计本身没问题的情况下。）
+
+丰富的表达能力：Kotlin语言是一个函数试编程和面向对象编程正交的语言，同时支持一些全新的语法特性，例如type-safe builder, delegated properties。这些特性可以帮助我们构建功能强大且易于使用，易于扩展且易于维护的组件。
+
+## 一个Kotlin程序的样子
+
+让我们从一个简单的例子，来看一下Kotlin语言的风格。这个例子定义了一个People类和一个存放People实例的集合，以及一个实现从集合中找到年纪最大的一个人的实例。
+注：这里我引用了Kotlin In Action中的这个例子，我觉得这个例子足够体现一个Kotlin风格的的代码的样子，这个例子虽然小，但是却融合的表达式，函数试编程，data class（Kotlin 特有的数据类）。最有意思的是，代码仅仅只有几行，很神奇。大家可以在下面这个链接中运行这个程序。
+
+https://try.kotl.in/#/Kotlin%20in%20Action/Chapter%201/1.1/1.1_ATasteOfKotlin.kt
+
+<pre><code>
+
+data class Person(val name: String,
+                  val age: Int? = null)
+
+fun main(args: Array<String>) {
+    val persons = listOf(Person("Alice"),
+                         Person("Bob", age = 29))
+
+    val oldest = persons.maxBy { it.age ?: 0 }
+    println("The oldest is: $oldest")
+}
+
+// The oldest is: Person(name=Bob, age=29)
+
+</code></pre>
+
+- data 关键字修饰类时，Kotlin编译器自动会帮助我们生成一个Data Entry所必需的实现，Java开发者如果使用过Lambok框架和IDE插件的话，应该一下子明白编译器会对Data Class生成什么代码了，这个地址提供了一个视频，来展现Lombok中@Data注解替我们都做了什么（https://projectlombok.org/）。现在使用Kotlin，我们可以不需要额外安装插件和库，仅仅使用data就可以实现这一切。
+
+- persons.maxBy { ... } 使用了lambdas表达式，Higher-Order-Function的概念，如果是用Java实现，我们需要做更多的工作了。其实非常多，且函数试的实现更佳优雅（优雅可能已经被身边的很多写程序的人用烂了，但是这这里用这个词我认为是对的）
+
+<pre><code>
+//People.java
+
+import org.jetbrains.annotations.NotNull;
+
+/**
+ * Created by leo on 2017/7/9.
+ */
+public class People implements Comparable {
+    private String name;
+    private int age;
+
+    public People(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof People)) return false;
+
+        People people = (People) o;
+
+        if (getAge() != people.getAge()) return false;
+        return getName().equals(people.getName());
+    }
+
+    @Override
+    public int hashCode() {
+        int result = getName().hashCode();
+        result = 31 * result + getAge();
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "People{" +
+                "name='" + name + '\'' +
+                ", age=" + age +
+                '}';
+    }
+
+    @Override
+    public int compareTo(@NotNull Object o) {
+        if (o instanceof People) {
+            People p = (People) o;
+            return this.age - p.age;
+        }
+        return -1;
+    }
+}
+
+// PeopleUtil.java 来实现找到age最大的对象
+
+import java.util.List;
+
+/**
+ * Created by leo on 2017/7/9.
+ */
+abstract public class PeopleUtil {
+    static People max(List&lt;People&gt; peoples) {
+        People result = null;
+        for (People people : peoples) {
+            if (result == null){
+                result = people;
+            } else {
+                if (result.compareTo(people) < 0){
+                    result = people;
+                }
+            }
+        }
+        return result;
+    }
+}
+
+</code></pre>
+
+这样比较一下，是不是差别很大，Kotlin，Swift，Rust这一代的编程语言，都更佳倾向于让编译器做更多的事情，接管内存管理，数据处理，和一些普遍且重复性的工作，把这些工作从编码中迁移到编译器编译过程去做。把我们从重复性工作中解脱出来，更多的做有创造性的工作上去。而且，编译器开发人员工作在更高层的level，他们能做的工作比我们更佳的有效，因为，在某些方面，他们能做的优化要比我们更佳强大。我们去做我们该做好的事情吧，用更快的速度去实现创意，想法和满足用户日新月异的需求，可以说，把用户惯坏是我们的成功的一种表象。
+
+## Kotlin的特性
+
+### 跨平台特性
+
+Kotlin可以运行在JVM 运行时环境，Android， javascript运行时，和Native编译称本地库使用。
+
+尤其是在JVM环境下，Kotlin已经被长期应用在很多大型商业化产品中，包括Google，Twitter，Linkedlin等公司的系统中，实践证明运用Kotlin可以极大的简化开发人员的日常工作，且可以很好的与已有的java库共同工作。
+
+目前应用最多的领域包括：
+
+- 服务器端应用，作为web应用的后台实现
+- 移动端Android开发（ios 端使用swift作为官方语言已经有数年）
+
+但是Kotlin仍然可以用在更多的地方，例如，使用Intel Multi-OS Engine (https://software.intel.com/en-us/multi-os-engine) 将Kotlin库运行在IOS 环境中，我们公司正在尝试使用rust来实现相同的目标，且我们已经迈出了一步。
+
+### 静态类型
+
+像Java一样，Kotlin是静态类型语言，即所有表达式赋值的类型，都是编译时确定的，同时编译器会替我们做编译时检测，确定我们我们要访问的方法和属性的类型是否正确。
+
+与动态类型语言例如（Javascript，Groovy）相反，动态类型语言表达式赋予属性的对象的类型时运行时确定的，即成运行到表达式的时候，当时表达式返回的类型，就是属性变量的类型。静态编译时无法确定。与静态类型语言相比，动态语言在表达式赋值，属性声明上代码会更佳简介，与此同时也失去了静态类型检查带来的安全性。
+
+Kotlin与Java相比，虽然都是静态类型语言，但是，大部分时候我们可以省却为变量指定类型，大部分时候，编译器可以推演出其类型。例如，当编译器在编译我们定义的一个数值型常量的时候，通过分析我们为这个常量赋值为数字1来确定变量的类型时Int。
+
+<pre><code>
+val x = 1
+</code></pre>
+
+相对于动态类型，静态类型会给我们带来一些好处：
+
+- 更好的性能。 因为类型是编译时确定的，函数调用的关系也是编译时确定的，因此，在运行时就不用额外的工作来确定调用的函数是哪个类的。
+- 更可靠的代码。编译器会帮我们检测教研我们的代码的正确性，因此，很少有可能在运行时造成崩溃和闪退。
+- 更好的可维护性。团队合作的时候，使用和维护其他同伴开发的代码会更佳容易，因为你可以很容易的确定你所使用的每一个对象的类型。
+- 工具支持。静态类型语言可以在代码中携带更多的信息，这些信息可以帮助IDE和编译器提供更多工具帮助我们完成特定的工作。
+
+## 函数试编程和面向对象编程
 
 Kotlin支持典型的函数式编程范式，与面向对象编程的却别体现在以下几点：
 - 无状态函数 无状态含义是，每一个函数都接受一组输入，并返回一个或者多个结果。函数本身并不改变本函数作用于外的任何对象或者变量，且任何一种输入，都仅有一种特定的结果被返回。因此，函数本身是完全无副作用的，且非常容易被测试。想想我们在Java 面向接口编程的时候，有的时候，要想覆盖一个类的所有代码，我们必须不得不Mockup这个类需要依赖的所有接口和对象的行为，以此来确保测试代码会运行被测试类代码里的每一个逻辑分支。 而且能做到这点的前提，还是能做到依赖反转，面向接口等原则。如果开始设计的时候，就没有关注过代码本身的可测试性，基本上连运行起来都很难。且如果你不Mockup所有依赖的类，而是直接调用依赖的类来运行你的测试，这很难叫做单元测试。
