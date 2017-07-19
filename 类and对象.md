@@ -1572,3 +1572,4 @@ class C {
 
 编译器生成的代码，显示生成一个prop$delegate的属性来保存代理类，然后实现属性prop的get set 方法。 方法自动传入this，属性所在的类的实例，和属性本身。 this::prop的语法从1.1开始提供。:: 依附于this对象，后跟prop实际上是get方法，实际上可以理解为一个绑定了this对象的函数，可以被传递和调用，在后面介绍Higher order Function的时候，我们会介绍。
 
+## 面向接口编程（POP）
