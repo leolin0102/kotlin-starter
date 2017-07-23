@@ -32,7 +32,7 @@ fun main(args: Array<String>) {
 
 - 当data关键字修饰类时，Kotlin编译器会自动帮助我们生成一个Data Entry所必需的实现。Java开发者如果使用过Lambok框架和IDE插件的话，应该瞬间就能明白编译器会对Data Class生成什么代码了。这个地址提供了一个视频，来展现Lombok中@Data注解替我们都做了什么（https://projectlombok.org/）。现在使用Kotlin，我们可以不需要额外安装插件和库，仅仅使用data就可以实现这一切。
 
-- persons.maxBy { ... } 使用了 lambdas 表达式，Higher-Order-Function的概念。如果是用Java实现，我们需要做更多的工作。
+- persons.maxBy { ... } 使用了 lambda 表达式，Higher-Order-Function的概念。如果是用Java实现，我们需要做更多的工作。
 
 <pre><code>
 //People.java
@@ -186,8 +186,8 @@ val x = 1
 
 - 高阶函数（Higher-Order functions）高阶函数的定义是，一个函数以其它函数作为入参，或者以函数作为结果return。高阶函数是通过First Class Function机制实现的函数首先是一个类，我们可以把函数理解成只有一个成员方法的类。函数式编程思想中，经常会通过高阶函数的方式抽象数据处理的机制，例如，集合类中的map和filter等方法实现了低层次的对数据的处理流程。但是这些函数依赖开发人员实现的高阶函数来提供对特定集合中的数据的处理逻辑，并可以通过高阶函数来调整整个低层次处理流程的运转机制。，。，。，。，。
  
-- Lambdas函数式语言提供Higher-Order functions特性。Lambdas可以被理解为Higher-Order function的极简形式。Java8中开始引入了Lambdas，从此使得Java语言有了函数式编程的特性，而之前只能通过匿名内部类来实现类似的目的。Lambdas使得代码更加简洁，可读性更高。
-注意：Lambdas表达式实现的逻辑不宜过重，一般推荐使用lambdas表达式作为胶水将事件和处理逻辑进行粘合，即表达式只实现对功能函数的调用或者实现对特定数据的解析和转化，例如实现集合类filter函数中数据过滤的规则。
+- lambda函数式语言提供Higher-Order functions特性。lambda可以被理解为Higher-Order function的极简形式。Java8中开始引入了lambda，从此使得Java语言有了函数式编程的特性，而之前只能通过匿名内部类来实现类似的目的。lambda使得代码更加简洁，可读性更高。
+注意：lambda表达式实现的逻辑不宜过重，一般推荐使用lambda表达式作为胶水将事件和处理逻辑进行粘合，即表达式只实现对功能函数的调用或者实现对特定数据的解析和转化，例如实现集合类filter函数中数据过滤的规则。
 
 ### 其它特性：
 
