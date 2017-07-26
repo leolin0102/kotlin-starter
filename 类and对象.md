@@ -937,7 +937,7 @@ objs.add(1); // 我们这里在数组的最前面添加了一个Int 类型的对
 String s = strs.get(0); // !!! ClassCastException: Cannot cast Integer to String
 </code></pre>
 
-上面的例子是为了说明，如果允许类型转换为什么会带来因为。实际上 Java 是禁止这样的类型转换，以此来避免运行时的异常。但是这样限制也有一些不便，例如，我们看一下java中的Collection接口中的addAll()函数。addAll函数的定义是什么？比较直接的定义方式是：
+上面的例子是为了说明，如果允许类型转换会带来异常。实际上 Java 是禁止这样的类型转换，以此来避免运行时的异常。但是这样限制也有一些不便，例如，看一下Java 中的 Collection 接口中的 addAll() 函数。addAll() 函数的定义是什么？比较直接的定义方式是：
 
 <pre><code>
 // Java
@@ -956,7 +956,7 @@ void copyAll(Collection&lt;Object&gt; to, Collection&lt;String&gt; from) {
 }
 </code></pre>
 
-因此实际上，java中Collection的addAll是这样定义的：
+因此实际上，Java 中 Collection 的 addAll() 函数是这样定义的：
 
 <pre><code>
 // Java
@@ -965,11 +965,11 @@ interface Collection&lt;E&gt; ... {
 }
 </code></pre>
 
-我们可以定义一个简单的原则，如果你只从容器里获取对象，则可以使用类型转换将String容器转换成Object容器，并从中读取对象。反过来，如果我们将String对象写入Object集合，也是可以的。在java中可以定义  List&lt;? super String&gt; 为List&lt;Object&gt;的子类，我们称作逆变换。
+可以定义一个简单的原则，如果只从容器里获取对象，则可以使用类型转换将 String 容器转换成 Object 容器，并从中读取对象。反过来，如果将 String 对象写入 Object 集合，也是可以的。在 Java 中可以定义 List&lt;? super String&gt; 为 List&lt;Object&gt; 的子类，称作逆变换。
 
 ### 编译时类型转换
 
-假如我们定义范型接口 Iterator&lt;T&gt; 其中没有函数以T类型作为入参，仅仅含有一个返回类型为T的函数next。
+假如定义范型接口 Iterator&lt;T&gt; 其中没有函数以 T 类型作为入参，仅含有一个返回类型为 T 的函数 next。
 
 <pre><code>
 // Java
@@ -978,7 +978,7 @@ interface Iterator&lt;T&gt; {
 }
 </code></pre>
 
-这样的场景下，将Iterator&lt;String&gt;类型转换成一个Iterator&lt;Object&gt;属性并使用是安全的，因为没有函数会试图像容器中添加对象。但是下面这种情况依然是不允许的：
+这样的场景下，将 Iterator&lt;String&gt; 类型转换成一个 Iterator&lt;Object&gt; 属性并是安全地使用，因为没有函数会试图向容器中添加对象。但是下面这种情况依然是不允许的：
 
 <pre><code>
 // Java
@@ -988,9 +988,9 @@ void demo(Iterator&lt;String&gt; strs) {
 }
 </code></pre>
 
-为了解决这个问题，我们必须将迭代器声明为Iterator&lt;? extends Object&gt;,这样我们可以放入任何Object对象的子类，同时模板类中，仅调用对Object类型的代码，但是，我们不能再把这个迭代器再转化到Iterator&lt;String&gt;了，因为不确定Object容器内存放的是否都是String类型。
+为了解决这个问题，必须将迭代器声明为 Iterator&lt;? extends Object&gt;,这样可以放入任何 Object 对象的子类中，同时模板类中，仅调用对 Object 类型的代码，但是，不能再把这个迭代器再转化到 Iterator&lt;String&gt; 了，因为不确定 Object 容器内存存储的是否都是 String 类型。
 
-在Kotlin中，有一种方式可以告知编译器。就是编译时类型转换：我们可以对Iterator的类型参数前增加一个注解来告知编译器保证范型类型仅仅作为函数的结果返回类型,但是不会作为函数的入参。
+在 Kotlin 中，有一种方式可以告知编译器。就是编译时类型转换：可以对 Iterator 的类型参数前增加一个注解来告知编译器保证范型类型仅作为函数的结果返回类型,但是不会作为函数的入参。
 
 <pre><code>
 abstract class Iterator&lt;out T&gt; {
@@ -1003,9 +1003,9 @@ fun demo(strs: Iterator&lt;String&gt;) {
 }
 </code></pre>
 
-out T 的含义就是告诉编译器，我们只会从迭代器中获取数据，但是不会像Iterator中添加对象。（只出不进）编译时类型转换，实际上含义是，我们在编写代码的时候确定通过out属性告诉编译器，我们不会试图像像容器中添加对象。
+out T 的含义就是告诉编译器，只会从迭代器中获取数据，不会向 Iterator 中添加对象。（只出不进）编译时类型转换，实际上含义是，在编写代码的时候确定通过 out 属性通知编译器，不会试图向容器中添加对象。
 
-与out相呼应的是in注解，in注解用来在编译的时候告知编译器，相应的属性是可逆变的。含义与out相反，in修饰的属性仅仅能作为方法的入参，不能作为结果返回。例如：Comparable
+与 out 相呼应的是 in 注解，in 注解用来在编译的时候告知编译器，相应的属性是可逆变的。含义与 out 相反，in 修饰的属性仅作为方法的入参，不能作为结果返回。例如：Comparable。
 
 <pre><code>
 abstract class Comparable&lt;in T&gt; {
@@ -1019,7 +1019,7 @@ fun demo(x: Comparable&lt;Number&gt;) {
 }
 </code></pre>
 
-上面代码中因为Comparable不存在以T为结果返回的函数，因此我们可以将Comparable&lt;Number&gt;赋值给Comparable&lt;Double&gt;的属性。因为Double是Number的子类型，只要子类型的容器只消费这个对象，并不将对象通过函数调用结果传递给容器外，就不会造成任何问题。
+上面代码中因为 Comparable 不存在以 T 为结果返回的函数，因此可以将 Comparable&lt;Number&gt; 赋值给 Comparable&lt;Double&gt; 的属性。因为 Double 是 Number 的子类型，只要子类型的容器只消费这个对象，并不将对象通过函数调用结果传递给容器外，就不会造成任何问题。
 
 ### 类型推测
 
