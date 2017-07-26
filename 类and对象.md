@@ -314,7 +314,7 @@ val isEmpty: Boolean
     get() = this.size == 0
 </code></pre>
 
-代码中，this关键字是对当前类实例的引用。
+代码中，this 关键字是对当前类实例的引用。
 
 自定义 setter 函数：
 
@@ -326,26 +326,26 @@ var stringRepresentation: String
     }
 </code></pre>
 
-缺省的setter如参叫value，大部分时候，直接的使用value这个名字会很方便，但是，我们可以使用一个自己的名字来代替value这个缺省值。
+缺省的 setter 如参叫 value，大部分时候，直接使用 value 这个名字会很方便，但是，也可以使用一个自定义的的名字来代替 value 这个缺省值。
 
-Kotlin 1.1以后，你可以通过自定义getter函数的返回类型来指定属性的类型。
+Kotlin 1.1 以后，可以通过自定义 getter 函数的返回类型来指定属性的类型。
 
 <pre><code>
 val isEmpty get() = this.size == 0 // has type Boolean
 </code></pre>
 
-如果我们只想改变属性的作用域，或者对其进行注解，但是不想自定义属性的 getter 和 setter函数，我们可以省略函数的body：
+如果只想改变属性的作用域，或者对其进行注解，但是不想自定义属性的 getter 和 setter 函数，可以省略函数的 body：
 
 <pre><code>
 var setterVisibility: String = "abc"
     private set // 这里不需要提供setter的body
 var setterWithAnnotation: Any? = null
-    @Inject set // 我们后面向大家介绍注解的概念
+    @Inject set // 后面向大家介绍注解的概念
 </code></pre>
 
 辅助字段 （Backing Field）
 
-Kotlin中的类是不支持字段的。但是，当我们实现自定义 setter 函数的时候，我们需要一个辅助字段来访问property，当且仅当在setter中，我们可以使用关键字field来访问property。
+Kotlin 中的类是不支持字段的。但是，当实现自定义 setter 函数的时候，需要一个辅助字段来访问 property，当且仅当在 setter 中，可以使用关键字 field 来访问 property。
 
 <pre><code>
 var counter = 0 // value 的值被直接赋值给property， 通过使用辅助字段
@@ -354,11 +354,11 @@ var counter = 0 // value 的值被直接赋值给property， 通过使用辅助�
     }
 </code></pre>
 
-field关键字仅可以在属性的访问函数（getter 和 setter）中使用。
+field 关键字仅可以在属性的访问函数（getter 和 setter）中使用。
 
-当我们在属性访问函数中使用field，或者至少自定义一个访问函数时，辅助字段会被自动生成。
+当在属性访问函数中使用 field，或者至少自定义一个访问函数时，辅助字段会被自动生成。
 
-例如，下面这段代码中，field是不需要的
+例如，下面这段代码中，field 是不需要的
 
 <pre><code>
 val isEmpty: Boolean
@@ -367,7 +367,7 @@ val isEmpty: Boolean
 
 ### 辅助属性 (Backing Property)
 
-如果 ，我们想实现的属性访问函数没法使用辅助字段来实现，我们可以声明一个私有的辅助属性。
+如果 ，实现的属性访问函数没法使用辅助字段来实现，可以声明一个私有的辅助属性。
 
 <pre><code>
 private var _table: Map<String, Int>? = null //辅助属性
@@ -380,17 +380,17 @@ public val table: Map<String, Int>
 }
 </code></pre>
 
-辅助属性必须是私有的，因此，和java语言中访问私有属性的方式相同，且同样没有默认的getter和setter函数，因此，对辅助属性的访问，不会产生函数调用。
+辅助属性必须是私有的，因此，和 Java 语言中访问私有属性的方式相同，且同样没有默认的 getter 和 setter 函数，因此，对辅助属性的访问，不会产生函数调用。
 
 ### 编译时常量
 
-如果在编写代码的时候，一个属性的值就已经被确定，且不会再被改变（例如一些配置属性），则可以声明为编译时常量。我们可以为属性添加 "const" 来修饰。
+如果在编写代码的时候，一个属性的值就已经被确定，且不会再被改变（例如一些配置属性），则可以声明为编译时常量。可以为属性添加 "const" 来修饰。
 
 编译时常量必须满足以下条件：
 
 - 必须是全局或者属于一个对象
-- 类型必须是string或者其它原始类型
-- 没有自定义getter函数
+- 类型必须是 string 或者其他原始类型
+- 没有自定义 getter 函数
 
 编译时常量可以用在注解中（配置属性）
 
@@ -401,9 +401,9 @@ const val SUBSYSTEM_DEPRECATED: String = "This subsystem is deprecated"
 
 ### 后赋值属性
 
-Kotlin的属性分为可选属性用 ？注明（optional）和 非空属性 ！号注明，未指定时，属性默认都是非空属性。
+Kotlin 的属性分为可选属性用 ？ 注明（optional）和 非空属性 ！号注明，未指定时，属性默认都是非空属性。
 
-非空属性必须要在构造函数中声明，但是有的时候，我们没法在构造函数中赋值，但是，又想声明成非空属性，这样引用这个属性的所有地方，就都不用做判空处理了。例如，在对象构造后，由依赖注入框架赋值或单元测试中的setup函数中赋值等，我们可以使用 lateinit 关键字来告诉编译器，稍后会第一时间为此属性赋值。
+非空属性必须要在构造函数中声明，但是有的时候，没法在构造函数中赋值，但是，又想声明成非空属性，这样引用这个属性的所有地方，就都不用做判空处理了。例如，在对象构造后，由依赖注入框架赋值或单元测试中的 setup 函数中赋值等，可以使用 lateinit 关键字来告诉编译器，稍后会第一时间为此属性赋值。
 
 <pre><code>
 public class MyTest {
@@ -422,7 +422,7 @@ public class MyTest {
 
 ## 接口 （Interface）
 
-Kotlin的接口和java8十分相似,其实我觉得跟swift的protocol更像。接口是面向对象中非常重要的一个概念。但是，纯面向对象中的接口必须全部都是抽象函数，即只有函数的定义没有body，声明实现此接口的类，必须提供接口中抽象函数的实现。Kotlin中的接口，即可以是抽象函数，也可以提供默认实现，即非抽象函数。但是，接口是不可以保存属性的状态。因此，不可以在接口中给属性赋值，要么声明抽象属性，要么为属性提供自定义访问函数。
+Kotlin 的接口和 Java8 十分相似,其实作者认为跟 Swift 的 protocol 更像。接口是面向对象中非常重要的一个概念。但是，纯面向对象中的接口必须全部都是抽象函数，即只有函数的定义没有 body，声明实现此接口的类，必须提供接口中抽象函数的实现。Kotlin 中的接口，即可以是抽象函数，也可以提供默认实现，即非抽象函数。但是，接口是不可以保存属性的状态。因此，不可以在接口中给属性赋值，要么声明抽象属性，要么为属性提供自定义访问函数。
 
 接口使用 interface 关键字来声明:
 
@@ -468,11 +468,11 @@ class Child : MyInterface {
 
 ### 作用域标识
 
-类，对象，接口，构造函数，函数，属性和属性getter可以用作用域修饰来指定可见作用域。（Getter 的作用域与属性声明的作用域相同，不可以单独指定）一共有4中作用域：私有(private), 保护(protected), 内部(internal) 和 公共(public).未指名作用域的时候，默认的作用域是Public。
+类、对象、接口、构造函数、函数、属性和属性 getter 可以用作用域修饰来指定可见作用域。（Getter 的作用域与属性声明的作用域相同，不可以单独指定）一共有 4 种作用域：私有(private)、保护(protected)、内部(internal) 和 公共(public)。未指名作用域的时候，默认的作用域是 public。
 
 #### 包作用域 (Packages)
 
-函数，属性，和类，类的对象和接口都可以被声明在Packages下。作为顶层元素。
+函数，属性，类、类的对象和接口都可以被声明在 Packages 下。作为顶层元素。
 
 <pre><code>
 // file name: example.kt
@@ -483,10 +483,10 @@ class Bar {}
 
 </code></pre>
 
-- 如果在包内的顶层声明的元素，没有指定任何作用域，则都为public，这些元素将全局可见。
+- 如果在包内的顶层声明的元素，没有指定任何作用域，则都为 public，这些元素将全局可见。
 - 如果声明私有元素，则元素的作用域仅限于文件内部。
-- 如果我们定义internal，则此元素仅模块内可见（Kotlin中Model被定义为，一组源代码文件被独立的编译并打包到一起）。
-- 包的顶层元素不可以使用protected，因为protected主要用户在对象继承关系中，仅子类可见。因此，只在类内部使用。
+- 如果定义 internal，则此元素仅模块内可见（Kotlin 中 Model 被定义为一组源代码文件被独立的编译并打包到一起）。
+- 包的顶层元素不可以使用 protected，因为 protected 主要用户在对象继承关系中，仅子类可见。因此，只在类内部使用。
 
 <pre><code>
 // file name: example.kt
@@ -503,14 +503,14 @@ internal val baz = 6 // visible inside the same module
 
 #### 类和接口作用域
 
-在类中，可以使用 private，protected，internal和public全部这四种修饰。
+在类中，可以使用 private、protected、internal 和 public 全部这 4 种修饰。
 
-- private 私有作用域，进当前类可见。
+- private 私有作用域，仅当前类可见。
 - protected 仅当前类和其子类可见。
 - internal 模块内可见。
 - public 对任何类可见。
 
-java开发者注意：在kotlin中，一个类的内部类的private元素对其宿主不可见。
+Java 开发者注意：在 kotlin 中，一个类的内部类的 private 元素对其宿主不可见。
 
 <pre><code>
 open class Outer {
@@ -547,22 +547,22 @@ class Unrelated(o: Outer) {
 class C private constructor(a: Int) { ... }
 </code></pre>
 
-未设置作用域时，主构造函数都为public，有时，如果一个类仅做工具类或者想确保全局仅有一个实例时，我们可以将构造函数私有化来禁止外面构造这个对象。
+未设置作用域时，主构造函数都为 public，有时，如果一个类仅做工具类或者想确保全局仅有一个实例时，可以将构造函数私有化来禁止外面构造这个对象。
 
 #### 模块
 
-上面提过关键字internal作用域代表被修饰的元素尽在模块内可见。而一个模块为代码文件的集合，例如：
+上面提过关键字 internal 作用域代表被修饰的元素尽在模块内可见。而一个模块为代码文件的集合，例如：
 - Intellig IDEA module
-- Maven或者gradle 的项目
-- 或者是一个ant task 打的jar
+- Maven 或者 gradle 的项目
+- 或者是一个 ant task 打包的 jar
 
 ##扩展（Extensions）
 
-和 C#，swift相似，Kotlin可以在不需要继承基类的情况下直接对类进行扩展，也不需要通过任何设计模式来实现逻辑的绑定和注入。（适配器）Kotlin可以实现函数扩展和属性扩展。尤其是有的时候我们无法修改我们依赖的模块内的对象，但是又想对其进行一定的扩展的时候，我们可以很轻松的大道我们的目标。
+和 C#、Swift 相似，Kotlin 可以在不需要继承基类的情况下直接对类进行扩展，也不需要通过任何设计模式（适配器）来实现逻辑的绑定和注入。Kotlin 可以实现函数扩展和属性扩展。尤其是在无法修改依赖的模块内的对象的时候，但是又想对其进行一定的扩展的时候，可以很轻松地达到目标。
 
 ### 函数扩展
 
-声明对函数的扩展，只需要在扩展函数的名字前面，使用被扩展类的名字作为前缀，并用.来分割。下面的例子将函数swap扩展到MutableList&lt;Int&gt;:
+声明对函数的扩展，只需要在扩展函数的名字前面，使用被扩展类的名字作为前缀，并用“.”来分割。下面的例子将函数 swap 扩展到 MutableList&lt;Int&gt;:
 
 <pre><code>
 fun MutableList&lt;Int&gt;.swap(index1: Int, index2: Int) {
@@ -572,14 +572,14 @@ fun MutableList&lt;Int&gt;.swap(index1: Int, index2: Int) {
 }
 </code></pre>
 
-扩展函数内的this代表被扩展的类，现在我们为MutableList扩展了一个函数swap，现在我们可以调用这个扩展函数了。
+扩展函数内的 this 代表被扩展的类，现在为 MutableList 扩展了一个函数 swap，现在可以调用这个扩展函数了。
 
 <pre><code>
 val l = mutableListOf(1, 2, 3)
 l.swap(0, 2) // 'this' inside 'swap()' will hold the value of 'l'
 </code></pre>
 
-上面函数中用到了范型（generic）。MutableList本身是个范型化的容器，函数扩展也可以同样用在范型中，例如上面的函数扩展可以改写为：
+上面函数中用到了范型（generic）。MutableList 本身是个范型化的容器，函数扩展也可以同样用在范型中，例如上面的函数扩展可以改写为：
 
 <pre><code>
 fun &lt;T&gt; MutableList&lt;T&gt;.swap(index1: Int, index2: Int) {
@@ -591,9 +591,9 @@ fun &lt;T&gt; MutableList&lt;T&gt;.swap(index1: Int, index2: Int) {
 
 ### 扩展的静态确定
 
-扩展函数对类的扩展是静态时确定的，即编译时，一方面，扩展函数并不是被添加到类上的，同时也不是动态的为类增加了虚拟的函数。Kotlin仅仅通过增加了一个函数，并使这个函数可以通过变量.调用到而已。
+扩展函数对类的扩展是静态时确定的，即编译时，一方面，扩展函数并不是被添加到类上的，同时也不是动态的为类增加了虚拟的函数。Kotlin 仅仅通过增加了一个函数，并使这个函数可以通过变量调用到而已。
 
-由于扩展是静态确定的，因此，没有办法通过运行时根据对象的实际类型来确定调用的具体函数的实现。因此，只能通过写代码的时候，代码中的对象的类型，来确定调用哪个具体的扩展函数。就是说，子类扩展，是不能重载基类的扩展函数的，如果我们代码里声明的是基类类型的变量，则，只能调用到对基类的扩展函数。
+由于扩展是静态确定的，因此，没有办法通过运行时根据对象的实际类型来确定调用的具体函数的实现，只能通过编写代码时，通过代码中的对象的类型，来确定调用哪个具体的扩展函数。就是说，子类扩展，是不能重载基类的扩展函数的，如果代码里声明的是基类类型的变量，则只能调用到对基类的扩展函数。
 
 <pre><code>
 open class C
@@ -611,7 +611,7 @@ fun printFoo(c: C) { // 由于入参确定了类型为C， 因此即使我们传
 printFoo(D()) // 输出 "c"
 </code></pre>
 
-最终结果是输出c， 因为目标扩展函数是通过入参 c 的声明类型来确定的，变量 c 的类型是 C， 因此对C的扩展函数C.foo()将会被调用。
+最终结果是输出 c， 因为目标扩展函数是通过入参 c 的声明类型来确定的，变量 c 的类型是 C， 因此对 C 的扩展函数 C.foo() 将会被调用。
 
 如果类内成员函数已经有同名和相同入参的话，外部的同名相同入参的扩展函数会不起作用。例如：
 
@@ -638,9 +638,9 @@ C().foo(1) //will print extension
 
 ### 被扩展类可控
 
-扩展函数可以使用？声明被扩展对象（receiver）为可空类型，因为可以调用变量对象上的扩展函数，因此，变量本身有可能为空，可以使用？修饰扩展函数，并在函数内对this进行非空判断。
+扩展函数可以使用 ？ 标识声明被扩展对象（receiver）为可空类型，因为可以调用变量对象上的扩展函数，因此，变量本身有可能为空，可以使用 ？ 标识修饰扩展函数，并在函数内对 this 进行非空判断。
 
-下面的扩展允许我们可以放心的对任何对象变量调用toString()，不管变量是否为空。
+下面的扩展允许开发人员可以放心的对任何对象变量调用 toString() 函数，不管变量是否为空。
 
 <pre><code>
 fun Any?.toString(): String {
@@ -661,11 +661,11 @@ val <T> List<T>.lastIndex: Int
     get() = size - 1
 </code></pre>
 
-因为扩展机制是静态决建立的，实际上扩展属性并不在类内部，因此，扩展属性是没有办法有辅助字端的。这是为什么构造函数内不可以应用扩展属性的原因。
+因为扩展机制是静态时建立的，实际上扩展属性并不在类内部，因此，扩展属性是没有办法有辅助字段的。这是为什么构造函数内不可以应用扩展属性的原因。
 
 ### 伙伴对象的扩展
 
-如果类中存在伙伴对象定义，我们同样可以对其进行函数扩展和属性扩展。
+如果类中存在伙伴对象定义，同样可以对其进行函数扩展和属性扩展。
 
 <pre><code>
 class MyClass {
@@ -685,7 +685,7 @@ MyClass.foo()
 
 ### 扩展的范围
 
-通常我们直接在包下面定义扩展。
+通常直接在包下面定义扩展。
 
 <pre><code>
 package foo.bar
@@ -693,7 +693,7 @@ package foo.bar
 fun Baz.goo() { ... }
 </code></pre>
 
-如果想在包内使用包之外的扩展来扩展包内不的类，我们只需要对其进行导入，使用关键import。
+如果想在包内使用包之外的扩展来扩展包内部的类，只需要对其进行导入，使用关键字 import。
 
 <pre><code>
 package com.example.usage
@@ -731,7 +731,7 @@ class C {
 }
 </code></pre>
 
-如果类内扩展函数调用的函数，在被扩展类中也被声明，存在冲突。则在冲突发生的时候，被扩展类的实现将被调用，如果我们想调用宿主类中的函数，则需要@符号后跟类名来区分。
+如果类内扩展函数调用的函数，在被扩展类中也被声明，存在冲突。则在冲突发生的时候，被扩展类的实现将被调用，如果想调用宿主类中的函数，则需要 @ 符号后跟类名来区分。
 
 <pre><code>
 class C {
@@ -742,7 +742,7 @@ class C {
 }
 </code></pre>
 
-类内部的函数扩展可以是open作用域的，且可以被子类重写。相当于，类中的成员扩展函数的实现取决于构造的是哪个类，基类还是子类，但是，对被扩展对象来说，其扩展函数的实现依然在静态时被确定。
+类内部的函数扩展可以是 open 作用域的，且可以被子类重写。相当于，类中的成员扩展函数的实现取决于构造的是哪个类，基类还是子类，但是，对被扩展对象来说，其扩展函数的实现依然在静态时被确定。
 
 <pre><code>
 open class D {
@@ -784,14 +784,14 @@ C().caller(D1()) // prints "D.foo in C" - caller函数静态时去定调用对D�
 
 ### 使用扩展的动机
 
-在java语言中，我们有的时候会创建带有Utils后缀的类，用于放一些公共的无状态的静态工具函数。例如java中非常著名的集合工具类java.util.Collections中提供了一些工具函数来方便我们处理数据集。
+在 Java 语言中，有的时候会创建带有 Utils 后缀的类，用于放一些公共的无状态的静态工具函数。例如 Java 中非常著名的集合工具类 java.util.Collections 中提供了一些工具函数来方便处理数据集。
 
 <pre><code>
 // Java
 Collections.swap(list, Collections.binarySearch(list, Collections.max(otherList)), Collections.max(list))
 </code></pre>
 
-如果我们使用java 静态导入这个类。（Kotlin没有静态导入的概念，不需要）如果曾经用java开发过elasticsearch的查询条件构造的话，就更佳熟悉了。
+使用 Java 静态导入这个类（Kotlin 没有静态导入的概念），曾经使用 Java 开发过 elasticsearch 的查询条件构造的话，就对此更熟悉了。
 
 <pre><code>
 static import java.util.Collection.*
@@ -799,7 +799,7 @@ static import java.util.Collection.*
 swap(list, binarySearch(list, max(otherList)), max(list)) //函数实现是由Collection提供，因为交换需要对list对象进行操作，所以入参需要也将list本身作为参数传递给swap函数。
 </code></pre>
 
-使用Kotlin扩展，我们可以将这样的函数直接扩展到对象，我们可以直接对变量进行函数调用。而如果想在Java里实现下面的效果，我们就只能通过实现一个List类，并实现基类里的所有必需被子类实现的抽象函数。因为List本身是抽象类，里面定义了很多抽象函数。
+使用 Kotlin 扩展，可以将函数直接扩展到对象中，也可以直接对变量进行函数调用。而如果想在 Java 里实现下面的效果，就只能通过实现一个 List 类，并实现基类里的所有必须被子类实现的抽象函数。因为 List 本身是抽象类，里面定义了很多抽象函数。
 
 <pre><code>
 
@@ -808,20 +808,20 @@ func List.swap(list: List) {}
 list.swap(list.binarySearch(otherList.max()), list.max())
 </code></pre>
 
-通过上面的写法，我们仅仅需要实现一个函数，并扩展到了所有List类的实例上。
+通过上面的写法，仅需要实现一个函数，并扩展到了所有 List 类的实例上。
 
 ## 数据类 （Data Class）
 
-在面向对象编程思想中，倾向于为每一个数据格式定义一个类，仅仅封装结构化数据，并提供一些机械化的成员函数，大部分java程序员都熟知如何用IDE的快捷键来快速生成这些机械化的代码。在Kotlin中可以仅仅使用data关键字来声明一个类，就可以了，连使用快捷键的操作都是多余的。
+在面向对象编程思想中，倾向于为每一个数据格式定义一个类，仅封装结构化数据，并提供一些机械化的成员函数，大部分 Java 序员都熟知如何用 IDE 快捷键来快速生成这些机械化的代码。在 Kotlin 可以仅使用 data 关键字来声明一个类，就可以了，连使用快捷键的操作都是多余的。
 
 <pre><code>
 data class User(val name: String, val age: Int)
 </code></pre>
 
 编译器将会自动根据主构造函数的参数列表，自动生成下面的成员函数：
-- data对象的equals 和 hashCode对
-- toString方法 返回内容如： "User(name=John, age=42)"
-- componentN() 一种根据索引N获取参数值的成员函数，编译器会根据类的属性声明的顺序来生成componentN()函数，例如，我们可以通过对User的实例 user 调用 user.component1() 来获得属性 name 的值。
+- data 象的 equals 和 hashCode 对
+- toString 方法的返回内容如："User(name=John, age=42)"
+- componentN() 一种根据索引 N 取参数值的成员函数，编译器会根据类的属性声明的顺序来生成 componentN() 函数，例如，可以通过对 User 的实例 user 调用 user.component1() 来获得属性 name 的值。
 - copy 函数。
 
 如果上面的任何一个函数在当前类的body中定义，或者被子类重写，则编译器将不会生成默认实现。
