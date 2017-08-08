@@ -96,19 +96,130 @@ RxJava帮助我们在多线程环境下维护状态的同步即同一时刻仅�
 
 Observable代表一个有序的数据流。你会一直使用这个抽象类来进行编程。因为数据流可以长时间不停的产生新的数据，因为可以将其看作事件流。通过对其调用subscribe函数来订阅数据的改变。日常有很多时间流的例子： 
 
+- UI点击事件
+- 网络层的数据传输
+- 用户的商品订单
+- 上传图片或者视频
+
+Observable与Iterable非常详细，因此也支持filter、map等函数可以对Observable中传递的事件流进行类型转换、过滤和合并操作。FRP通过Observable来封装底层函数，因此Observable起到了集成和连接的作用，业务逻辑通过订阅需要的Observable来获取函数库的服务。由于Observable可以作为数据流的抽象层，同时支持对数据的转换，因此可以通过灵活的对Observable的事件流中的数据，应用不同的函数对数据进行封装处理，将我们各自独立的函数组合成新的模块来实现变化多端的用户需求。下面是一个简单的例子实现从数据库读取数据，页面会订阅数据并将结果加载到页面。
+
+Observable中的事件分为三种类型
+- onNext
+- onError 
+- onCompleted
+
+<pre><code>
+interface Observer<T> {
+    void onNext(T t)
+    void onError(Throwable t)
+    void onCompleted()
+}
+</code></pre>
+
+可以对Observable调用0到无限次onNext来传递事件流，当产生异常时调用onError，事件流结束时调用onComplete函数，onError和onComplete函数为终止命令。
+
+<pre><code>
+
+enum class TaskType {
+    TASK,
+    CHALLENGE,
+    ACCUMULATION
+}
+
+// TaskItem
+open class TaskItem(): RealmObject() {
+    @PrimaryKey
+    var rid = ""
+    var title = ""
+    var content = ""
+    var type: Int = TaskType.TASK.ordinal
+    var updateTime = Date()
+    var createTime = Date()
+    var extenData = ""
+
+    constructor(title: String, type: TaskType, content: String) : this()
+}
+
+// 保存TaskItem到本地数据库，我们这里使用Realm对象型数据库来持久数据
+fun getAllTaskFromRealm(realm: Realm): List&lt;TaskItem&gt; {
+    return realm.where(TaskItem::class.java).findAll()
+}
+
+// 根据ID读取TaskItem
+fun getTaskByIdFromRealm(rid: String, realm: Realm): TaskItem {
+    return realm.where(TaskItem::class.java).equalTo("rid", rid).findFirst()
+}
+
+// 创建数据
+fun realmCreateTaskItem(task: TaskItem, realm: Realm) {
+    realm.executeTransaction {
+        task.rid = UUID.randomUUID().toString()
+        realm.insert(task)
+    }
+}
+</code></pre>
+
+上面代码先声明了TaskItem实体类，一个TaskItem是一个任务，任务类型分为积累、挑战和专注类型。同时定义了三个函数来对数据进行创建和读取。这三个函数虽然依赖Realm，但是因为我们都是传入的，因此只要测试的时候创建测试用的realm数据库，就可以单独进行测试了。下一步是使用Observable来封装这三个接口的调用和返回的数据。使用Observable的一个目的是实现依赖反转原则，即依赖抽象层编程。Observable的实现有很多种，但是对于订阅者，仅仅只针对Observable这个抽象类型进行编程。
+
+下面代码对三个基础函数进行封装：
+
+<pre><code>
+fun getAllTask(realm: Realm): Observable&lt;List&lt;TaskItem&gt;&gt; {
+    return Observable.defer {
+        Observable.fromArray(getAllTaskFromRealm(realm))
+    }
+}
+
+fun getTaskById(rid: String, realm: Realm): Observable&lt;TaskItem&gt; {
+    return Observable.defer {
+        Observable.just(getTaskByIdFromRealm(rid, realm))
+    }
+}
+
+fun createTask(task: TaskItem, realm: Realm): Observable&lt;TaskItem&gt; {
+    return Observable.defer {
+        realmCreateTaskItem(task, realm)
+        Observable.just(task)
+    }
+}
+</code></pre>
+
+Observable.fromArray构造函数根据一个数组作为事件源来构造一个Observable实例，并在数组数据流的结尾增加一个complete事件。
+
+Observable.just函数与fromArray类似，just含义是
+
+Observable.defer函数是一个构造器方法，defer的作用是延后运行，defer输入一个lambda作为唯一的参数，仅当对这个Observable调用subscribe函数进行订阅的时候，lambda内部的代码才会被运行。延时运行（按需调用）这个概念对函数式风格的代码非常有帮助。延时执行可以确保代码不会过早的一次性处理过多的任务、占用哪些资源、以及调用顺序。
+
+注：在面向对象中引入IOC容器并利用Proxcy（动态代理）特性可以实现延时构造，就是为了解决由于对象之的依赖关系造成需要不断的调整对象的构造顺序的问题，由于容器为每个类先构造了一个Proxcy代理，这样所有对象都得到了对指定对象的引用，但其实只是得到了一个代理，这样系统的各个组件在构造阶段就不需要调整顺序了，而构造的顺序会自然的由调用的顺序来决定。函数式也需要处理类似的问题，同样也是使用lazy的方式解决。
+
+最后一步是在需要数据的地方调用获取Observable的实例并订阅。
+
+<pre><code>
+// 创建一个任务记录
+val task = TaskItem(name, type = type, content = content)
+createTask(task, realm = realm)
+        .doOnComplete { finish() }
+        .doOnError {
+            error -&gt; println(error)
+            Toast.makeText(applicationContext, "任务创建失败", Toast.LENGTH_SHORT).show()
+            finish()
+        }.subscribe()
 
 
+// 加载数据
+val results = getAllTask(realm).toList().blockingGet().single()
 
+// 根据ID加载TaskItem
+getTaskById(rid, realm)
+        .doOnNext { task = it }
+        .doOnError {
+            Toast.makeText(applicationContext, "任务数据加载失败", Toast.LENGTH_SHORT).show()
+            finish()
+        }
+        .subscribe()
+</code></pre>
 
-
-
-
-
-
-
-
-
-
+doOnNext、doOnError、doOnComplete这三个函数分别处理Observable中的onNext、onError和onComplete这三种事件。处理好这三种事件，可以为程序提供良好的弹性（恢复能力）。
 
 
 
