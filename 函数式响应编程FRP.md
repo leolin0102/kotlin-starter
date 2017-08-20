@@ -220,5 +220,87 @@ getTaskById(rid, realm)
 </code></pre>
 
 doOnNext、doOnError、doOnComplete这三个函数分别处理Observable中的onNext、onError和onComplete这三种事件。处理好这三种事件，可以为程序提供良好的弹性（恢复能力）。
+ 
+有了设定的目标，接下来就是增加日志模块来统计每天花在各个任务上的时间，并生成图标来形象的展示用户每天分配在各个任务上的时间的比例，应用的目的是帮助用户追踪自己的时间分配，这样用户可以均衡的分配时间到自己想完成的所有任务上，让自己的所有目标，每天都有进步，每天都得到积累。
+
+<pre><code>
+open class TaskLog() : RealmObject() {
+    @PrimaryKey
+    var rid = ""
+    var refId: String = ""
+    var startTime = Date()
+    var cost: Long = 0
+
+    constructor(rid: String = "",
+                refId: String,
+                startTime: Date,
+                cost: Long) : this() {
+        this.rid = rid
+        this.refId = refId
+        this.startTime = startTime
+        this.cost = cost
+    }
+}
+
+fun getWholeDayTaskLogByDate(dayDate: Date, realm: Realm): Observable&lt;List&lt;TaskLog&gt;&gt; {
+    return Observable.defer {
+        Observable.fromArray(findTaskLogsByDay(dayDate, realm))
+    }
+}
+
+fun addTaskLog(taskLog: TaskLog, realm: Realm): Observable&lt;TaskLog&gt; {
+    return Observable.defer {
+        Observable.just(insertOrUpdateTaskLog(taskLog, realm))
+    }
+}
+
+fun modifyTaskLogInTransaction(realm: Realm, updater: () -> Unit): Observable&lt;Unit&gt; {
+    return Observable.defer {
+        modifyInRealmTransaction(realm, updater)
+        Observable.empty<Unit>()
+    }
+}
+
+
+fun findTaskLogsByDay(dayDate: Date, realm: Realm): List&lt;TaskLog&gt; {
+    val dateRange = getWholeDayTimes(dayDate)
+    return realm
+            .where(TaskLog::class.java)
+            .findAll()
+            .where().between("startTime", dateRange.first, dateRange.second)
+            .findAll()
+            .toList()
+}
+
+fun insertOrUpdateTaskLog(taskLog: TaskLog, realm: Realm): TaskLog {
+    realm.executeTransaction {
+        taskLog.rid = UUID.randomUUID().toString()
+        realm.insertOrUpdate(taskLog)
+    }
+    return taskLog
+}
+</code></pre>
+
+findTaskLogsByDay函数用来获取某一天的任务执行日志，当天的日志数据中记录了用户一天做了哪些任务，合适开始做的，合适结束的。程序还可以通过对这个数据集合的数据进行聚合，计算出用户在各个任务上花费的时间各是多少，最终可以统计处当天在各个任务下分配的时间的占比，统计占比的过程我们称之为归一化处理。
+
+可以通过条形图或者饼图的形式来展现一天的进展，因此我们需要为图形控件提供所需要的数据，下一章会介绍如何用Kotlin集成D3 Chart来完成数据的可视化展现。
+
+归一化的公式是:
+    norm[i] = cost[i] / totalCost
+
+实现的步骤是首先得出我们在每一个任务中分别花费的时间，再计算花费在所有任务的时间的综合。这样分别将每个Task下话费的时间除以总时间，就能得到我们分配在每一类任务的时间占比。App的目标是通过聚合数据告诉用户他是否在一定时期内，对某一个任务分配的时间过少了，该是时候调整一下，好确保所有的目标都会不断的取得进步而不是被放弃掉。
+
+下面是实现的代码：
+
+<pre><code>
+fun normalizationTasks(tasklogs: List&lt;TaskLog&gt;): List&lt;Map&lt;String, Double&gt;&gt; {
+    val cost = tasklogs.groupBy { it.refId }.map { it.key to it.value.sumByDouble { it.cost.toDouble() } }
+    val totalCost = cost.sumByDouble { it.second }
+    return cost.map { mapOf( it.first to it.second / totalCost ) }
+}
+</code></pre>
+
+首先通过groupBy函数先将数据根据refId进行分组，调用后得到一个Map&lt;String, List&lt;TaskLog&gt;&gt;格式的数据，之后对新的集合调用map个函数来计算每一种task花费的时间的和，最终得到一个Map&lt;String, Double&gt;的集合
+
 
 上面三个函数是在控制层(Activity)中会被用到，通过对函数返回的Observable的订阅来得到期望的结果，Activity可以面向Observable这个抽象对象进行编程，
