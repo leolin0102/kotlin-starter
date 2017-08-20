@@ -186,7 +186,7 @@ fun createTask(task: TaskItem, realm: Realm): Observable&lt;TaskItem&gt; {
 
 Observable.fromArray构造函数根据一个数组作为事件源来构造一个Observable实例，并在数组数据流的结尾增加一个complete事件。
 
-Observable.just函数与fromArray类似，just含义是
+Observable.just函数与fromArray类似，just相当于onNext + onComplete的组合，即Observable仅仅只有一个信号，之后结束。
 
 Observable.defer函数是一个构造器方法，defer的作用是延后运行，defer输入一个lambda作为唯一的参数，仅当对这个Observable调用subscribe函数进行订阅的时候，lambda内部的代码才会被运行。延时运行（按需调用）这个概念对函数式风格的代码非常有帮助。延时执行可以确保代码不会过早的一次性处理过多的任务、占用哪些资源、以及调用顺序。
 
@@ -221,6 +221,4 @@ getTaskById(rid, realm)
 
 doOnNext、doOnError、doOnComplete这三个函数分别处理Observable中的onNext、onError和onComplete这三种事件。处理好这三种事件，可以为程序提供良好的弹性（恢复能力）。
 
-
-
-首先创建一个Grandle管理的Android项目TimeMachine，这个小程序的目标是记录日常的事件分配，把日常工作分为专注，积累和挑战三种不同的模式，并记录我们日常完成这些任务所分配的时间我们会让用户每天都可以看到以年、月、周和天为单位的数据聚合统计。
+上面三个函数是在控制层(Activity)中会被用到，通过对函数返回的Observable的订阅来得到期望的结果，Activity可以面向Observable这个抽象对象进行编程，
