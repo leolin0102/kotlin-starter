@@ -300,7 +300,11 @@ fun normalizationTasks(tasklogs: List&lt;TaskLog&gt;): List&lt;Map&lt;String, Do
 }
 </code></pre>
 
-首先通过groupBy函数先将数据根据refId进行分组，调用后得到一个Map&lt;String, List&lt;TaskLog&gt;&gt;格式的数据，之后对新的集合调用map个函数来计算每一种task花费的时间的和，最终得到一个Map&lt;String, Double&gt;的集合
+首先通过groupBy函数先将数据根据refId进行分组，调用后得到一个Map&lt;String, List&lt;TaskLog&gt;&gt;格式的数据，之后对新的集合调用map个函数来计算每一种task花费的时间的和，最终得到一个Map&lt;String, Double&gt;的集合。
+
+接着计算进行所有任务的总耗时，直接对上面的分组数据使用sumByDouble来求和。
+
+最后使用map函数将cost里面的每一个分组任务日志的时间除与总时间得到最后归一化的数据，类型为List&lt;Map&lt;String, Double&gt;&gt;.
 
 
 上面三个函数是在控制层(Activity)中会被用到，通过对函数返回的Observable的订阅来得到期望的结果，Activity可以面向Observable这个抽象对象进行编程，
