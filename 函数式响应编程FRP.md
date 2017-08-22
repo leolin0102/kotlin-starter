@@ -306,5 +306,11 @@ fun normalizationTasks(tasklogs: List&lt;TaskLog&gt;): List&lt;Map&lt;String, Do
 
 最后使用map函数将cost里面的每一个分组任务日志的时间除与总时间得到最后归一化的数据，类型为List&lt;Map&lt;String, Double&gt;&gt;.
 
+下图是使用Kotlin结合D3组件实现的统计表报：
+
+<img src="./images/task_log_summary.png">
+
+这样我们每天都知道我们为实现目标都做了哪些努力，以及加下来要把更多时间飞配给落后的任务了。
+
 
 上面三个函数是在控制层(Activity)中会被用到，通过对函数返回的Observable的订阅来得到期望的结果，Activity可以面向Observable这个抽象对象进行编程，
