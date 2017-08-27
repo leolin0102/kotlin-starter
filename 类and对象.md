@@ -77,7 +77,7 @@ class Empty
 
 ### 构造函数
 
-一个 Kotlin 类只能有一个主构造函数，和一个或者多个次要构造函数。主构造函数作为类头部的一部分出现。
+一个 Kotlin 类只能有一个主构造函数，但可以有一个或者多个辅助构造函数。主构造函数作为类头部的一部分出现。
 
 <pre><code>
 class Person constructor(firstName: String) {
@@ -101,7 +101,7 @@ class Customer(name: String) {
 }
 </code></pre>
 
-主构造函数声明的参数，可以被 init 代码块和属性的初始化。
+主构造函数声明的参数可以用于初始化init代码块或类内部的属性。
 
 <pre><code>
 class Customer(name: String) {
