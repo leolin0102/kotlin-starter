@@ -369,30 +369,30 @@ var &lt;propertyName&gt;[: &lt;PropertyType&gt;] [= &lt;property_initializer&gt;
     [&lt;setter&gt;]
 </code></pre>
 
-property_initializer、getter、setter 都是可选的，如果 initializer 存在，或者 getter 提供返回值可以让编译器推断出属性类型，则 PropertyType 也是可选的。
+property_initializer、getter、setter都是可选的，如果initializer存在，或者getter提供返回值可以让编译器推断出属性类型，则PropertyType也是可选的。
 
 <pre><code>
 var allByDefault: Int? // error: 需要明确的初始值
 var initialized = 1 // 定义 Int 类型的变量 initialized，缺省的 getter 和 setter 函数
 </code></pre>
 
-不可变属性以 val 开头，且不允许又 setter 函数。
+不可变属性以val开头，且不允许有setter函数。
 
 <pre><code>
 val simple: Int? // Int类型变量simple， 默认的getter函数实现，因为是不可变，因此必须要在类的构造函数中初始化。
-val inferredType = 1 // 取值为1的 Int 类型变量 inferredType，默认的 getter 函数实现。
+val inferredType = 1 // 取值为1的Int类型变量inferredType，默认的get函数实现。
 </code></pre>
 
-可以自定义 getter 函数：
+可以自定义get函数：
 
 <pre><code>
 val isEmpty: Boolean
     get() = this.size == 0
 </code></pre>
 
-代码中，this 关键字是对当前类实例的引用。
+代码中this关键字是对当前类实例的引用。
 
-自定义 setter 函数：
+自定义set函数：
 
 <pre><code>
 var stringRepresentation: String
@@ -402,15 +402,15 @@ var stringRepresentation: String
     }
 </code></pre>
 
-缺省的 setter 如参叫 value，大部分时候，直接使用 value 这个名字会很方便，但是，也可以使用一个自定义的的名字来代替 value 这个缺省值。
+缺省的set方法为唯一入参是value，大部分时候，直接使用 value 这个名字会很方便，但是，也可以使用一个自定义的的名字来代替 value 这个缺省值。
 
-Kotlin 1.1 以后，可以通过自定义 getter 函数的返回类型来指定属性的类型。
+Kotlin 1.1 以后，可以通过自定义get函数的返回类型来指定属性的类型。
 
 <pre><code>
 val isEmpty get() = this.size == 0 // has type Boolean
 </code></pre>
 
-如果只想改变属性的作用域，或者对其进行注解，但是不想自定义属性的 getter 和 setter 函数，可以省略函数的 body：
+如果只想改变属性的作用域或对其进行注解，但不想自定义属性的get和set函数，可以省略函数体：
 
 <pre><code>
 var setterVisibility: String = "abc"
@@ -421,20 +421,18 @@ var setterWithAnnotation: Any? = null
 
 辅助字段 （Backing Field）
 
-Kotlin 中的类是不支持字段的。但是，当实现自定义 setter 函数的时候，需要一个辅助字段来访问 property，当且仅当在 setter 中，可以使用关键字 field 来访问 property。
+Kotlin 中的类是不支持字段的。但是，当实现自定义set函数的时候，需要一个辅助字段来访问property，当且仅当在set中才可以使用关键字field来访问property。
 
 <pre><code>
-var counter = 0 // value 的值被直接赋值给property， 通过使用辅助字段
+var counter = 0 // value 的值被直接赋值给property，通过使用辅助字段设置属性值
     set(value) {
         if (value >= 0) field = value
     }
 </code></pre>
 
-field 关键字仅可以在属性的访问函数（getter 和 setter）中使用。
+field 关键字仅可以属性的（get和set）中使用。且field被生成的前提条件是属性的get或者set函数至少有一个不被重载，即使用默认实现。
 
-当在属性访问函数中使用 field，或者至少自定义一个访问函数时，辅助字段会被自动生成。
-
-例如，下面这段代码中，field 是不需要的
+例如，下面这段代码中field不会被生成
 
 <pre><code>
 val isEmpty: Boolean
@@ -443,20 +441,20 @@ val isEmpty: Boolean
 
 ### 辅助属性 (Backing Property)
 
-如果 ，实现的属性访问函数没法使用辅助字段来实现，可以声明一个私有的辅助属性。
+如果想在get或者set方法中需要进行额外的工作，而这时field无法满足需求的时候，可以使用辅助属性来实现。例如：
 
 <pre><code>
 private var _table: Map<String, Int>? = null //辅助属性
 public val table: Map<String, Int>
     get() {
         if (_table == null) {
-        _table = HashMap() 
+            _table = HashMap() 
+        }
+        return _table ?: throw AssertionError("table属性被其它线程释放") 
     }
-    return _table ?: throw AssertionError("table属性被其它线程释放") //由于getter 外部使用了_table，因此，我们没办法使用field的方式，在getter中为属性赋值。因此必须使用辅助属性。
-}
 </code></pre>
 
-辅助属性必须是私有的，因此，和 Java 语言中访问私有属性的方式相同，且同样没有默认的 getter 和 setter 函数，因此，对辅助属性的访问，不会产生函数调用。
+辅助属性必须是私有的，因此和Java语言中访问私有属性的方式相同，且同样没有默认的get和set函数。对辅助属性的访问，不会产生函数调用。
 
 ### 编译时常量
 
@@ -465,8 +463,8 @@ public val table: Map<String, Int>
 编译时常量必须满足以下条件：
 
 - 必须是全局或者属于一个对象
-- 类型必须是 string 或者其他原始类型
-- 没有自定义 getter 函数
+- 类型必须是string或者其他原始类型
+- 没有自定义getter函数
 
 编译时常量可以用在注解中（配置属性）
 
@@ -475,11 +473,11 @@ const val SUBSYSTEM_DEPRECATED: String = "This subsystem is deprecated"
 @Deprecated(SUBSYSTEM_DEPRECATED) fun foo() { ... }
 </code></pre>
 
-### 后赋值属性
+### 延后赋值属性
 
-Kotlin 的属性分为可选属性用 ？ 注明（optional）和 非空属性 ！号注明，未指定时，属性默认都是非空属性。
+Kotlin 的属性分为可选属性用“？”注明（optional）和非空属性！号注明，未指定时属性默认都是非空属性。
 
-非空属性必须要在构造函数中声明，但是有的时候，没法在构造函数中赋值，但是，又想声明成非空属性，这样引用这个属性的所有地方，就都不用做判空处理了。例如，在对象构造后，由依赖注入框架赋值或单元测试中的 setup 函数中赋值等，可以使用 lateinit 关键字来告诉编译器，稍后会第一时间为此属性赋值。
+非空属性必须要在雷的构造函数中初始化，但是有的时候没法在构造函数中赋值，这时如果又想声明成非空属性使得引用这个属性的所有地方省区做判空处理时可以使用lateinit。例如，在对象构造后由依赖注入框架赋值或单元测试中的setup函数中赋值等，可以使用lateinit关键字来告诉编译器，稍后程序会在变量被使用前为此属性赋值。
 
 <pre><code>
 public class MyTest {
@@ -494,11 +492,11 @@ public class MyTest {
 }
 </code></pre>
 
-注意只有可变属性 var 才可以后赋值。如果在后赋值属性被初始化之前访问此属性，则会抛出特定的异常来告诉开发者。
+注意只有可变属性var才可以使用lateinit。如果在延时赋值属性被初始化之前访问此属性，则会抛出特定的异常来告诉开发者。
 
 ## 接口 （Interface）
 
-Kotlin 的接口和 Java8 十分相似,其实作者认为跟 Swift 的 protocol 更像。接口是面向对象中非常重要的一个概念。但是，纯面向对象中的接口必须全部都是抽象函数，即只有函数的定义没有 body，声明实现此接口的类，必须提供接口中抽象函数的实现。Kotlin 中的接口，即可以是抽象函数，也可以提供默认实现，即非抽象函数。但是，接口是不可以保存属性的状态。因此，不可以在接口中给属性赋值，要么声明抽象属性，要么为属性提供自定义访问函数。
+Kotlin的接口和Java8十分相似,其实跟Swift的protocol更像。接口是面向对象中非常重要的一个概念，纯面向对象中的接口必须全部都是抽象函数，即只有函数的定义没有实现，声明实现此接口的类，必须提供接口中所有抽象函数的实现。Kotlin中的接口与传统的面向对象不同，即可以是抽象函数也可以提供默认实现，即非抽象函数。允许接口定义的方法有默认实现可以使我们不通过泪的集成直接对特定的类进行扩展，也就是声明实现这个接口的类直接可以使用接口的带有默认实现的函数。接口是不可以保存属性的状态，因此不可以在接口中给属性赋值，要么声明抽象属性，要么为属性提供自定义访问函数。
 
 接口使用 interface 关键字来声明:
 
@@ -513,10 +511,10 @@ interface MyInterface {
 
 ### 实现接口
 
-一个类可以声明实现多个接口:
+一个类可以声明实现一个或者多个接口:
 
 <pre><code>
-class Child : MyInterface {
+class Child : MyInterface, MyInterface2 {
     override fun bar() {
         // body
     }
@@ -525,7 +523,7 @@ class Child : MyInterface {
 
 ### 接口中的属性
 
-接口中也可以声明属性。可以声明抽象接口定义，或者提供自定义的访问器函数。接口中的属性不能使用辅助域变量，因此，接口中的访问器不可以使用。
+接口中也可以声明属性也可以声明抽象接口定义，或者提供自定义的访问器函数。但是由于接口是无状态的，因此接口中属性的get和set函数中是没有back field的。
 
 <pre><code>
 interface MyInterface {
@@ -544,11 +542,11 @@ class Child : MyInterface {
 
 ### 作用域标识
 
-类、对象、接口、构造函数、函数、属性和属性 getter 可以用作用域修饰来指定可见作用域。（Getter 的作用域与属性声明的作用域相同，不可以单独指定）一共有 4 种作用域：私有(private)、保护(protected)、内部(internal) 和 公共(public)。未指名作用域的时候，默认的作用域是 public。
+类、对象、接口、构造函数、函数、属性和属性的get/set方法都可以用作用域修饰符来指定可见作用域。（Getter 的作用域与属性声明的作用域相同，不可以单独指定）一共有 4 种作用域：私有(private)、保护(protected)、内部(internal) 和 公共(public)。未指名作用域的时候，默认的作用域是 public。
 
 #### 包作用域 (Packages)
 
-函数，属性，类、类的对象和接口都可以被声明在 Packages 下。作为顶层元素。
+函数，属性，类、类的对象和接口都可以被声明在Packages下作为顶层元素。
 
 <pre><code>
 // file name: example.kt
@@ -559,7 +557,7 @@ class Bar {}
 
 </code></pre>
 
-- 如果在包内的顶层声明的元素，没有指定任何作用域，则都为 public，这些元素将全局可见。
+- 如果在包内的顶层声明的元素，没有指定任何作用域，则都为public作用域，这些元素将全局可见。
 - 如果声明私有元素，则元素的作用域仅限于文件内部。
 - 如果定义 internal，则此元素仅模块内可见（Kotlin 中 Model 被定义为一组源代码文件被独立的编译并打包到一起）。
 - 包的顶层元素不可以使用 protected，因为 protected 主要用户在对象继承关系中，仅子类可见。因此，只在类内部使用。
@@ -586,14 +584,14 @@ internal val baz = 6 // visible inside the same module
 - internal 模块内可见。
 - public 对任何类可见。
 
-Java 开发者注意：在 kotlin 中，一个类的内部类的 private 元素对其宿主不可见。
+Java 开发者注意：在 kotlin 中，一个类的内部类中的private元素对其宿主不可见。
 
 <pre><code>
 open class Outer {
     private val a = 1
     protected open val b = 2
     internal val c = 3
-    val d = 4 // public by default
+    val d = 4 // 默认为public
 
     protected class Nested {
         public val e: Int = 5
@@ -601,17 +599,17 @@ open class Outer {
 }
 
 class Subclass : Outer() {
-    // a is not visible
-    // b, c and d are visible
-    // Nested and e are visible
+    // a 不可见
+    // b, c 和 d 可见
+    // Nested 和 e 可见
 
-    override val b = 5 // 'b' is protected
+    override val b = 5 // 'b' 保护级别
 }
 
 class Unrelated(o: Outer) {
-    // o.a, o.b are not visible
-    // o.c and o.d are visible (same module)
-    // Outer.Nested is not visible, and Nested::e is not visible either
+    // o.a, o.b 不可见
+    // o.c 和 o.d 可见 (同模块下)
+    // Outer.Nested 不可见, 同时Nested::e 不可见
 }
 </code></pre>
 
