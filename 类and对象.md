@@ -124,9 +124,9 @@ class Person(val firstName: String, val lastName: String, var age: Int) {
 class Customer public @Inject constructor(name: String) { ... }
 </code></pre>
 
-###  次要构造函数
+###  辅助构造函数
 
-一个类可以有多个次要构造函数，在类 body 中使用 constructor 来修饰。
+一个类可以有多个辅助构造函数，在类 body 中使用 constructor 来修饰。
 
 <pre><code>
 class Person {
@@ -136,7 +136,7 @@ class Person {
 }
 </code></pre>
 
-所有的次要构造函数都必须继承自主构造函数，也可以继承其他已经继承自主构造函数的次要构造函数。使用“:”后跟 this(&lt;parameters&gt;) 的形式。
+所有的辅助构造函数都必须制定主构造函数为代理，或者可以由其他的已经被自主构造函数代理的辅助构造函数代理。设置代理使用“:”后跟 this(&lt;parameters&gt;) 的形式。
 
 <pre><code>
 class Person(val name: String) {
@@ -146,7 +146,7 @@ class Person(val name: String) {
 }
 </code></pre>
 
-一个没有任何主次构造函数的非抽象类将默认生成一个没有如参的主构造函数，因此如果想让此类不可以被外部创建。（由类的共有函数来创建）则可以使用下面的方式。
+一个没有任何辅助构造函数的非抽象类将默认生成一个没有如参的主构造函数，因此如果想让此类不可以被外部创建。（由类的共有函数来创建）则可以使用下面的方式。
 
 <pre><code>
 class DontCreateMe private constructor () {
@@ -181,15 +181,15 @@ val customer = Customer("Joe Smith")
 
 继承是面向对象思想中的概念，一个类可以且只可以继承自另一个类。被继承的类称为父类（基类），继承自父类的所有类都称为它的子类。例如：
 
-在面向对象设计中，通过继承方式将逻辑分层，通用的共同的逻辑不断向上层迁移，而底层的具体的需求，向下迁移由子类来承担。（同样的代码永远只存在一份，每当拷贝一处代码到另外一个地方的时候，一定要思考，是否可以避免。）
+在面向对象设计中，通过继承方式将逻辑分层，通用的共同的逻辑不断向上层迁移，而底层的具体的需求，向下迁移由子类来承担。（同样的代码永远只存在一份，每当拷贝一处代码到另外一个地方的时候，提醒自己应该有更好的办法。）
 
-后面还会介绍，通过组合和聚合的方式，同样可以实现代码的高度重用，同时，组合和聚合比继承增加了在 runtime 时的灵活性，也就是通过组合和聚合，可以在运行时调整一个宿主对象的行为和特性。
+后面还会介绍，通过组合和聚合的方式同样可以实现代码的高度重用，同时组合和聚合比继承增加了在runtime时的灵活性，也就是通过组合和聚合可以在运行时调整一个宿主对象的行为和特性。
 
-Kotlin 的所有的类都继承自 Any 类，不需要声明。因此任何类如果不声明继承关系，则默认继承 Any。
+Kotlin 的所有的类都继承自Any类，不需要声明。因此任何类如果不声明继承关系，则默认继承自Any。
 
-Any 类与 Java 的 java.lang.Object 不同,Any 类只实现 equals()、 hashCode() 和 toString()。
+Any类与Java的java.lang.Object不同, Any类只实现equals()、hashCode(）和toString()。
 
-定义类继承关系,在类的头部使用“:”，后跟父类的名字。
+定义类继承关系需要在类的头部使用“:”，后跟父类的名字。
 
 <pre><code>
 open class Base(p: Int)
@@ -197,7 +197,7 @@ open class Base(p: Int)
 class Derived(p: Int) : Base(p)
 </code></pre>
 
-如果子类有主构造函数，则可以像想面的代码例子中，将主构造函数的参数来初始化基类的构造函数。（参数 p 作为基类构造函数的如参）如果子类没有主构造函数，则次要构造函数必须使用 super 关键字初始化父类，或者作为其他已经初始化主构造函数的次要构造函数的代理。这里注意的是，子类可以通过调用父类的主要和次要构造函数来完成父类的初始化，同时，子类的不同次要构造函数可以分别调用父类的不同构造函数。
+如果子类有主构造函数，则可以像上面的例子中，用主构造函数的参数来初始化基类的构造函数。（参数 p 作为基类构造函数的入参）如果子类没有主构造函数，则辅助构造函数必须使用 super 关键字初始化父类，或者作为其他已经初始化主构造函数的辅助构造函数的代理。这里注意的是，子类可以通过调用父类的主要和次要构造函数来完成父类的初始化，同时，子类的不同次要构造函数可以分别调用父类的不同构造函数。
 
 <pre><code>
 class MyView : View {
@@ -210,8 +210,9 @@ class MyView : View {
 上面出现的 open 关键字相当于 Java 中的 final 的反作用。因为在 Kotlin 语言中，所有的类都是 final 类型的，只有 open 类型的类才可以被继承。这样设计的原因在于，往往开发过程中，很难将开发的每一个类都设计的适合被继承，在 Java 中，经常是有很多函数，一旦被子类覆盖实现，就会彻底崩溃掉。因此 Kotlin 则采用严谨的态度，只有设计中允许被重载的函数或者基类，才可以通过使用 open 关键字来开放，否则，就允许继承和重载。
 
 ### 方法重载
+重载的意思是子类可以重新定义夫类中的同名方法的行为，可以完全覆盖夫类方法的行为，子类的重载方法可以通过调用supper函数来调用夫类同名方法对其进行扩展而不是覆盖。
 
-Kotlin 需要明确的使用 override 来声明对父类的 open 类型的函数进行重载。
+Kotlin需要明确的使用override来声明对父类的open类型的函数进行重载，所有方法默认都是不可以被重载的，必须手动时用open关键字才能允许子类重载。Kotlin语言的观点是，所有的重载都是设计的时候确定允许被重载的，因此与Java相反，默认所有方法都是不可被重载的。
 
 <pre><code>
 open class Base {
@@ -220,13 +221,13 @@ open class Base {
 }
 
 class Derived() : Base() {
-    override fun v() {} //必须使用 override 关键字，否则编译器会警告
+    override fun v() {} //必须使用override关键字，否则编译器会警告
 }
 </code></pre>
 
-没有 open 修饰的函数，子类即使使用了 override 也是不合法的，编译会失败。如果类头部未使用 open 修饰，则函数也不允许为 open 类型。
+没有open修饰的函数，子类即使使用了override也是不合法的，编译会失败。如果类头部未使用open修饰，则函数也不允许为open类型。
 
-添加了 override 的方法，本身是可以被它的子类重载的，如果想禁止，则需要增加 final 关键字。
+添加了override的方法，本身是可以被它的子类重载的，如果想禁止，则需要增加final关键字。
 
 <pre><code>
 open class AnotherDerived() : Base() {
@@ -236,9 +237,9 @@ open class AnotherDerived() : Base() {
 
 ### 属性重载
 
-属性重载的方式和方法重载类似，也是通过 override 声明，且只能重载父类中 open 类型的属性, 但是可以将不可变变量重载为可变变量，反过来也可以。重载不能改变属性的数据类型，只能重载属性的初始化和 get 方法。
+属性重载的方式和方法重载类似，也是通过override声明，且只能重载父类中open类型的属性, 但是可以将不可变变量重载为可变变量，反过来也可以。重载不能改变属性的数据类型，只能重载属性的初始化和get方法。
 
-注意：override 关键字可以出现在主构造函数的参数列表中。
+注意：override关键字可以出现在主构造函数的参数列表中。
 
 <pre><code>
 interface Foo {
@@ -254,7 +255,7 @@ class Bar2 : Foo {
 
 ### 重载规则
 
-Kotlin 中重载有一个需要遵守的规则，如果一个类的上层存在同一个方法的多个实现的话（例如，父类和接口扩展都实现了同一个方法），则子类必须重载此方法并提供自己的实现。这时 Java 面向对象中不可能出现的情况。一种简单的方式是，在子类的实现中，通过 super&lt;type&gt; 这个关键字来
+Kotlin中重载有一个需要遵守的规则，如果一个类的上层存在同一个方法的多个实现的话（例如，父类和接口扩展都实现了同一个方法），则子类必须重载此方法并提供自己的实现。这时Java面向对象中不可能出现的情况。一种简单的方式是，在子类的实现中，通过 super&lt;type&gt; 这个关键字来
 
 <pre><code>
 open class A {
@@ -278,7 +279,9 @@ class C() : A(), B {
 
 ## 抽象类
 
-同 Java 一样，可以通过 abstract 来定义抽象类和抽象方法。抽象方法没有具体的实现。且因为抽象函数就是希望被子类实现的，因此，不需要使用 open 修饰，就可以被子类重载。
+抽象类与普通的类的区别在于，抽象类中的方法可以没有实现，实际上抽象类是对一类通用逻辑的抽象。因此虽然抽象类也可以有自己的构造函数但却不能被构造出来，就是不存在抽象类构造出来的对象。抽象类中未提供实现的方法被称作抽象方法，不同的子类可以提供相同抽象方法的不同实现。
+
+同Java一样，可以通过abstract来定义抽象类和抽象方法。抽象方法没有具体的实现。且因为抽象函数就是希望被子类实现的，因此不需要使用open修饰，就可以被子类重载。
 
 <pre><code>
 
@@ -293,29 +296,33 @@ abstract class Derived : Base() {
 
 ## 伴生对象
 
-因为 Kotlin 是没有 static 关键字的，因此类没有静态方法。推荐直接使用 package 作用域下的函数来代替。
+因为Kotlin是没有static关键字的，因此类没有静态方法。推荐直接使用package作用域下的函数来代替，如果想通过类名称作为方法的命名空间的话，可以使用伴生对象。
 
-如果想定义一个方法，不通过获得一个类的实例直接调用，但同时又想访问被调用对象的内部。（例如，工厂方法）可以在被调用类内用 companion object 关键字声明一个内部类，在半生对象内，可以像在 Java 中调用静态方法一样，来调用宿主对象内的方法，只是需要使用宿主的类名作为前缀
+如果想定义一个方法，不通过获得一个类的实例直接调用，但同时又想访问被调用对象的内部。（例如，工厂方法）可以在被调用类内用companion object关键字声明一个内部伴生类，在半生对象内，可以像在 Java 中调用静态方法一样，来调用宿主对象内的方法，只是需要使用宿主的类名作为前缀.
 
 <pre><code>
 
-class MyClass {
-
-    fun hello() {}
-    companion object CompanionObj {
-        fun touchIt(): {
-            MyClass.hello()
+class MyClass(val text: String) {
+    private fun init() {}
+    companion object {
+        fun newInstance(): MyClass {
+            val test = MyClass("Hello")
+            test.init()
+            return test
         }
     }
 }
 
+MyClass.newInstance()
 </code></pre>
 
 ### 属性和字段（property and fields）
 
-在面向对象设计中，一个类可以具有多种属性，例如，我们创建一个类来代表员工（Staff），每个公司的员工，都有工龄、薪资、入职时间、职位、部门等信息，这些都是一个员工的属性，这些都是 Staff 类的 properties。
+在面向对象设计中，一个类可以具有多种属性，例如，我们创建一个类来代表员工（Staff），每个公司的员工，都有工龄、薪资、入职时间、职位、部门等信息，这些都是一个员工的属性，这些都是Staff类拥有的属性，属性的值保存在每一个对象中，称为对象的状态。
 
-属性为一个类的状态，外部只可以通过 getter 和 setter 函数来访问一个类的属性。而字段则是一个类下的变量，外部可以直接访问，不需要通过 getter 和 setter 函数，但是，Kotlin 不支持字段。
+属性为一个类的状态，外部只可以通过getter和setter函数来访问一个类的属性。而字段则是一个类下的变量，外部可以直接访问，不需要通过 getter和setter函数，但是Kotlin不支持字段只有属性。
+
+Kotlin会自动为属性生成getter方法和setter方法，Kotlin程序不需要显示的调用get或者set方法来访问属性，只有Java代码想访问Kotlin中的对象的属性的时候，才需要调用get和set方法。
 
 类可以有多个属性。可以声明成可变属性 var 和不可变 val 两种。
 
@@ -327,11 +334,22 @@ class Address {
     var state: String? = ...
     var zip: String = ...
 }
+
+//Java 
+Address address = new Address()
+address.set("香榭丽舍大道")
+
+println(address.get()) // 打印  香榭丽舍大道
 </code></pre>
 
-可以通过属性名直接引用一个属性。
+在Kotlin中可以通过属性名直接引用一个属性。
 
 <pre><code>
+val address = Address()
+addres.name = "香榭丽舍大道"
+
+println(address.name) // 打印 香榭丽舍大道
+
 fun copyAddress(address: Address): Address {
     val result = Address() // there's no 'new' keyword in Kotlin
     result.name = address.name // accessors are called
