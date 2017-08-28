@@ -116,7 +116,7 @@ class Person(val firstName: String, val lastName: String, var age: Int) {
     // ...
 }
 </code></pre>
-主构造函数内的变量既可以是 var，也可以是 val 的。
+主构造函数内的参数既可以是变量var，也可以是不可变val。
 
 如果构造函数包含注解或者作用域修饰则 constructor 关键字是必需的。作用域修饰要在最前面。
 
