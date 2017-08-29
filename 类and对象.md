@@ -869,7 +869,7 @@ C().caller(D1()) // prints "D.foo in C" - caller函数静态时去定调用对D�
 Collections.swap(list, Collections.binarySearch(list, Collections.max(otherList)), Collections.max(list))
 </code></pre>
 
-使用Java静态导入这个类（Kotlin 没有静态导入的概念），曾经使用 Java 开发过elasticsearch的查询条件构造的话，就对此更熟悉了。
+使用Java静态导入这个类（Kotlin 没有静态导入的概念），曾经使用Java开发过elasticsearch的查询条件构造的话，就对此更熟悉了。
 
 <pre><code>
 static import java.util.Collection.*
@@ -877,7 +877,7 @@ static import java.util.Collection.*
 swap(list, binarySearch(list, max(otherList)), max(list)) //函数实现是由Collection提供，swap需要对list对象进行操作，所以入参需要也将list本身作为参数传递给swap函数。
 </code></pre>
 
-使用 Kotlin 扩展可以将函数直接扩展到对象中，也可以直接对变量进行函数调用。而如果想在Java里实现下面的效果，就只能通过实现一个List类，并实现基类里的所有必须被子类实现的抽象函数。因为List本身是抽象类，里面定义了很多抽象函数。
+使用Kotlin扩展可以将函数直接扩展到对象中，也可以直接对变量进行函数调用。而如果想在Java里实现下面的效果，就只能通过实现一个List类，并实现基类里的所有必须被子类实现的抽象函数。因为List本身是抽象类，里面定义了很多抽象函数。
 
 <pre><code>
 
@@ -890,27 +890,27 @@ list.swap(list.binarySearch(otherList.max()), list.max())
 
 ## 数据类 （Data Class）
 
-在面向对象编程思想中，倾向于为每一个数据格式定义一个类，仅封装结构化数据，并提供一些机械化的成员函数，大部分 Java 序员都熟知如何用 IDE 快捷键来快速生成这些机械化的代码。在 Kotlin 可以仅使用 data 关键字来声明一个类，就可以了，连使用快捷键的操作都是多余的。
+在面向对象编程思想中，倾向于为每一个数据格式定义一个类，仅封装结构化数据，并提供一些机械化的成员函数，大部分Java序员都熟知如何用 IDE 快捷键来快速生成这些机械化的代码。在Kotlin可以仅使用data关键字来声明一个类，连使用快捷键自动生成代码的操作都是多余的。
 
 <pre><code>
 data class User(val name: String, val age: Int)
 </code></pre>
 
 编译器将会自动根据主构造函数的参数列表，自动生成下面的成员函数：
-- data 象的 equals 和 hashCode 对
-- toString 方法的返回内容如："User(name=John, age=42)"
-- componentN() 一种根据索引 N 取参数值的成员函数，编译器会根据类的属性声明的顺序来生成 componentN() 函数，例如，可以通过对 User 的实例 user 调用 user.component1() 来获得属性 name 的值。
-- copy 函数。
+- data象的equals和hashCode对
+- toString方法的返回内容如："User(name=John, age=42)"
+- componentN()一种根据索引 N 取参数值的成员函数，编译器会根据类的属性声明的顺序来生成componentN()函数，例如，可以通过对User的实例 user 调用 user.component1() 来获得属性 name 的值。
+- copy 方法。
 
-如果上面的任何一个函数在当前类的 body 中定义，或者被子类重写，则编译器将不会生成默认实现。
+如果上面的任何一个函数在当前类的函数体中定义或者被子类重写，则编译器将不会生成默认实现。
 
-编译器自动生成的函数需要对数据对象提供一致性，完整性。数据类需要满足以下几点：
+编译器自动生成的函数需要对数据对象提供一致性和完整性。数据类需要满足以下几点：
 - 主构造函数必须至少有一个属性参数。
 - 所有主构造函数的属性必须用 val 或者 var 来标记
 - 对象类不可以是抽象类，open 作用域，封闭类和内部类。（下一节会介绍封闭类）
 - 在 kotlin 1.1 之前，数据类只能作为接口的实现
 
-如果是在 JVM 上运行，则必须为数据类的所有构造函数的属性指定默认值。
+JVM上运行，则必须为数据类构造函数的所有属性指定默认值。
 
 <pre><code>
 data class User(val name: String = "", val age: Int = 0)
@@ -918,7 +918,7 @@ data class User(val name: String = "", val age: Int = 0)
 
 ### 数据类的 copy
 
-数据类自动生成的 copy 函数可以实现在对对象的克隆的同时，允许更改部分属性的值，这会给编写函数式风格的程序带来极大的帮助。在函数式编程中，一个函数不改变外部变量，仅是对一个特定输入属性的特定处理，并返回结果。因此，函数式编程不提倡直接改变对象的值来影响函数，而是通过 copy 并改变 copy 后的对象，并作为处理结果返回出来。这样每一个函数都是线程安全的，不需要额外的使用同步来保证线程安全。同时，也非常容易被测试，因此每一个输入，都有唯一的一个输出结果。而在 Swift 开发中，就没有这样的特性，因此我们会编写很多辅助函数，一般叫做透镜，来完成类似的逻辑。但是在 Kotlin 中，仅仅只需要一个关键字 data，太轻松了。
+数据类自动生成的copy函数可以实现在克隆对象的同时，允许更改部分属性的值，这会给编写函数式风格的程序带来极大的帮助。在函数式编程中，一个函数不改变外部变量，仅是对一个特定输入属性的特定处理，并返回结果。因此，函数式编程不提倡直接改变外部对象的值来引入副作用，而是通过copy并改变新对象的值。这样每一个函数都是线程安全的，不需要额外的使用同步来保证线程安全，同时也非常容易被测试，因此每一个输入都有唯一的一个输出结果。而在Swift开发中，就没有这样的特性从而开发人员必须编写透镜函数来完成同样的工作。但是在Kotlin中，仅仅只需要一个关键字 data就可以了。
 
 后面会介绍相应式函数编程（FRN），来为读者介绍一套比较完善的框架来实现状态管理和功能分离，通过信号绑定来实现与面向对象一样灵活的开发模式。
 
@@ -928,16 +928,16 @@ data class User(val name: String = "", val age: Int = 0)
 fun copy(name: String = this.name, age: Int = this.age) = User(name, age)
 </code></pre>
 
-因此可以像下面的代码一样，改变 age 的值，并产生一个新的对象：
+因此可以像下面的代码一样，改变age的值，并产生一个新的对象：
 
 <pre><code>
 val jack = User(name = "Jack", age = 1)
 val olderJack = jack.copy(age = 2)
 </code></pre>
 
-### 数据类对象属性的拆包赋值 (Destructuring Declarations)
+### 数据类对象属性的拆封 (Destructuring Declarations)
 
-数据类自动生成的 componentN 函数的作用之一是辅助完成属性的拆包赋值:
+数据类自动生成的componentN函数辅助完成属性的拆包赋值:
 
 <pre><code>
 val jane = User("Jane", 35)
@@ -945,7 +945,7 @@ val (name, age) = jane
 println("$name, $age years of age") // prints "Jane, 35 years of age"
 </code></pre>
 
-上面的代码中，将一个数据类赋值给一个有两个属性的元组
+上面的代码中，将一个数据类赋值给一个有两个属性的元组，编译器实际上是通过调用jane的component1() 和 component2()这两个函数分别为name和age赋值的。
 
 ### 标准数据类
 
@@ -955,9 +955,9 @@ Kotlin 标准库中，定义了两个数据类二元组（Pair）和三元组（
 
 ## 封闭类（Sealed Classes）
 
-封闭类的作用是封闭类的继承关系，当一个变量的类型只能是一组类型中的一种的时候，可以使用封闭类来进行限制。封闭类使用 sealed 来定义，封闭类仅仅只有一个类名称，没有构造函数、属性和 body。继承自同一个封闭类的子类形成了一个封闭的集合，当编写函数的时候，期望传入函数的属性必须是这个集合的类的情况下，可以将属性类型定义成这个集合的父类，即封闭类。这样可以用 when 语句来进行模式匹配，为每一个集合中的类匹配一种处理逻辑。使用封闭类定义入参就可以限定函数外只能传入属于这个集合的类型对象。when 语句也可以用在枚举上，封闭类与枚举的区别在于，封闭类可以是多实例，且每个实例可以保存状态。（类因为可以有属性，属性保存的即为类的状态）
+封闭类的作用是封闭类的继承关系，当一个变量的类型只能是一组类型中的一种的时候，可以使用封闭类来进行限制。使用 sealed 来定义，封闭类仅仅只有一个类名称，没有构造函数、属性和 body。继承自同一个封闭类的子类形成了一个封闭的集合，当编写函数的时候，期望传入函数的属性必须是这个集合的类的情况下，可以将属性类型定义成这个集合的封闭类。这样可以用 when 语句来进行模式匹配，为每一个集合中的类匹配一种处理逻辑。使用封闭类定义入参就可以限定函数外只能传入属于这个集合的类型对象。when 语句也可以用在枚举上，封闭类与枚举的区别在于，封闭类可以是多实例，且每个实例可以保存状态。（类因为可以有属性，属性保存的即为类的状态）
 
-封闭类的一个约定是，一个封闭类的子类，都必须定义在与封闭类相同的文件中。
+封闭类的一个约定是一个封闭类的子类都必须定义在与封闭类相同的文件中。
 
 <pre><code>
 sealed class Expr
@@ -973,13 +973,13 @@ fun eval(expr: Expr): Double = when (expr) {
 }
 </code></pre>
 
-**注意，上面的代码中，数据类继承封闭类的特性只有在 Kotlin1.1 之后才被支持，1.1 以下版本，数据类是不允许继承其自其它类的。**
+**注意，上面的代码中的数据类继承封闭类的特性只有在 Kotlin1.1 之后才被支持，1.1 以下版本，数据类是不允许继承其自其它类的。**
 
-在使用 when 进行模式匹配的时候，编译器会检测是否所有的类型都有一个处理，如果是，则不会强制使用 else 来设置默认处理分支，如果不是，则必须提供一个默认条件，否则编译器会警告。
+在使用 when 进行模式匹配的时候，编译器会检测是否所有的类型都有一个分支，如果是则不会强制使用 else 来设置默认处理分支，如果不是则必须提供一个默认条件，否则编译器会警告。
 
 ## 范型（Generics）  
 
-有的时候，我们称使用范型的类叫模板类，模板类也是一种抽象，一种逻辑的通用实现，与继承不同的是继承关系是在编译时就确定的（静态时），而模板类可以在运行时采取确定模板中操作的变量的类型，因此，可以针对具有同一种能力的不同类指定一套通用逻辑，并在构造模板类的时候，指定其操作的具体类型。这样，整个模板类，就会变成操作此类型对象的定制类。例如：
+范型的类可以看作是一个模板，模板类也是一种对底层逻辑的抽象实现，与抽象类不同的是抽象类是通过定义抽象方法留给自擂实现来实现扩展，而范型更符合针对抽象编程，编写范型类的代码时可以纯粹的针对抽象类编程的同时，使用方又可以通过指定这个抽象类的具体实现针对具体的子类实现代码，省去了强制类型转换的必要。因此，可以针对具有同一种能力的不同类指定一套通用逻辑，并在构造模板类的时候，指定其操作的具体类型。这样整个模板类，就会变成操作此类型对象的定制类。例如：
 
 <pre><code>
 class Box&lt;T&gt;(item: T) {
@@ -991,7 +991,7 @@ var box:Box&lt;T&gt; = Box&lt;T&gt;(1)
 println("print box value: $box.i")
 </code></pre>
 
-代码中开始定义了一个 Box 容器类后面的“&lt;T&gt”;指定一个要被替换的符号，构造函数的入参 item 的类型将在运行时被指定为具体的 type。紧跟着定义的box 变量，构造了一个以 Int 类型为入参的 Box 对象，这个时候，才真正确定了 T 的类型。
+代码中开始定义了一个 Box 容器类后面的“&lt;T&gt;指定一个要被替换的符号，构造函数的入参 item 的类型将在运行时被指定为具体的 type。紧跟着定义的box 变量，构造了一个以 Int 类型为入参的 Box 对象，这个时候，才真正确定了 T 的类型。
 
 如果构造函数中有出现模板中需要被确定的所有待定符号，则声明变量的时候，可以省略区变量声明后面的类型。
 
@@ -1001,11 +1001,11 @@ val box = Box(1)
 
 ### 类型转换 (Variance)
 
-Java 中有种巧妙的机制，叫通配符(wildcard) List&lt;? extends E&gt;，这样，任何继承自类型 E 的对象，都可以放入这个列表中去。Kotlin 没有这样的机制，Kotlin 引入两种机制来替代通配符：编译时变形和类型预测。
+Java 中有种巧妙的机制，叫通配符(wildcard) List&lt;? extends E&gt;，这样任何继承自类型E的对象，都可以放入这个列表中去。Kotlin 没有这样的机制，Kotlin 引入两种机制来替代通配符：编译时转换和类型预测。
 
-使用通配符的目的是使代码有更好的可扩展性，&lt;? extends E&gt;代表匹配所有 E 的子类，但是在模板内部的代码，仅仅只针对 E 来编写代码，也就是面向抽象层编写自己的模板，但是对于构造模板类，则可以面向具体的实现来编写，构造的地方是确定构造的模板对象是针对那个具体的类型的，因此，可以减少很多强制类型转换，也使得模板类不仅可以处理 E 类型，也可以处理所有 E 的子类。
+有一点需要注意的是在kotlin中不能简单的通过集成关系来确定一个类是否可以被范型类接受，不是所有的子类都可以顺利的作为一个范型类的输入类型（Kotlin有Optional类型的概念）。因此，kotlin使用边界的概念来界定一个类型是否可以被范型类接受。
 
-但是，Java 通配符也存在限制，首先通配符模板类是不可以类型转换的，例如 List&lt;String&gt;不是 List&lt;Object&gt;。如果允许这样的类型转换，意味着，转换后的 List 容器可以放入所有类型，而不仅只是 String。因此下面的代码，将会在运行时抛出异常（ClassCastException）。
+Java通配符有一个限制，就是范型类之间是不可以强制类型转换的，例如范型中List&lt;String&gt;与List&lt;Object&gt;不能进行类型转换。如果允许这样的类型转换，意味着转换后的List容器可以放入所有类型，而不仅只是 String。因此下面的代码，将会在运行时抛出异（ClassCastException）。
 
 <pre><code>
 // Java
@@ -1015,7 +1015,7 @@ objs.add(1); // 我们这里在数组的最前面添加了一个Int 类型的对
 String s = strs.get(0); // !!! ClassCastException: Cannot cast Integer to String
 </code></pre>
 
-上面的例子是为了说明，如果允许类型转换会带来异常。实际上 Java 是禁止这样的类型转换，以此来避免运行时的异常。但是这样限制也有一些不便，例如，看一下Java 中的 Collection 接口中的 addAll() 函数。addAll() 函数的定义是什么？比较直接的定义方式是：
+上面的例子是为了说明，如果允许类型转换会存在异常的可能。Java禁止这样的类型转换，以此来避免运行时可能的风险。但是这样限制也有一些不便，例如，看一下Java 中的 Collection 接口中的 addAll() 函数。addAll() 函数比较直接的定义方式是：
 
 <pre><code>
 // Java
@@ -1034,7 +1034,7 @@ void copyAll(Collection&lt;Object&gt; to, Collection&lt;String&gt; from) {
 }
 </code></pre>
 
-因此实际上，Java 中 Collection 的 addAll() 函数是这样定义的：
+实际上Java中Collection的addAll()函数是这样定义的：
 
 <pre><code>
 // Java
@@ -1043,11 +1043,11 @@ interface Collection&lt;E&gt; ... {
 }
 </code></pre>
 
-可以定义一个简单的原则，如果只从容器里获取对象，则可以使用类型转换将 String 容器转换成 Object 容器，并从中读取对象。反过来，如果将 String 对象写入 Object 集合，也是可以的。在 Java 中可以定义 List&lt;? super String&gt; 为 List&lt;Object&gt; 的子类，称作逆变换。
+可以定义一个简单的原则，如果一个范型类仅仅作为一个容器（provider）提供实例，且不操作实例（consume），即不调用实例的任何方法，则可以使用类型转换将 String 容器转换成 Object 容器，并从中读取对象。反过来，如果将 String 对象写入 Object 集合，也是可以的。在 Java 中可以定义 List&lt;? super String&gt; 为 List&lt;Object&gt; 的子类，称作逆变换。Kotlin中使用关键字out来告诉编译器范型类只做为实例的provider，因此可以进行逆变。
 
 ### 编译时类型转换
 
-假如定义范型接口 Iterator&lt;T&gt; 其中没有函数以 T 类型作为入参，仅含有一个返回类型为 T 的函数 next。
+例如定义一个范型接口 Iterator&lt;T&gt; 其中没有函数以 T 类型作为入参，仅含有一个返回类型为 T 的函数 next。
 
 <pre><code>
 // Java
@@ -1056,8 +1056,9 @@ interface Iterator&lt;T&gt; {
 }
 </code></pre>
 
-这样的场景下，将 Iterator&lt;String&gt; 类型转换成一个 Iterator&lt;Object&gt; 属性并是安全地使用，因为没有函数会试图向容器中添加对象。但是下面这种情况依然是不允许的：
+这样的场景下，将 Iterator&lt;String&gt; 类型转换成一个 Iterator&lt;Object&gt; 属性是安全的，因为没有函数会试图向容器中添加对象，这样的范型类称为provider。
 
+但是下面这种情况依然是不允许的：
 <pre><code>
 // Java
 void demo(Iterator&lt;String&gt; strs) {
@@ -1066,9 +1067,9 @@ void demo(Iterator&lt;String&gt; strs) {
 }
 </code></pre>
 
-为了解决这个问题，必须将迭代器声明为 Iterator&lt;? extends Object&gt;,这样可以放入任何 Object 对象的子类中，同时模板类中，仅调用对 Object 类型的代码，但是，不能再把这个迭代器再转化到 Iterator&lt;String&gt; 了，因为不确定 Object 容器内存存储的是否都是 String 类型。
+为了解决这个问题，必须将迭代器声明为 Iterator&lt;? extends Object&gt;,这样可以放入任何 Object 对象的子类中，同时模板类中，仅调用对 Object 类型的代码，但是，不能再把这个迭代器再转化到 Iterator&lt;String&gt;，因为不确定 Object 容器内存存储的是否都是 String 类型。
 
-在 Kotlin 中，有一种方式可以告知编译器。就是编译时类型转换：可以对 Iterator 的类型参数前增加一个注解来告知编译器保证范型类型仅作为函数的结果返回类型,但是不会作为函数的入参。
+在 Kotlin 中，有一种方式可以告知编译器。编译时类型转换，可以对Iterator的类型参数前增加一个注解来告知编译器，我们的代码将保证范型类型仅作为函数的结果返回类型,但是不会作为函数的入参。
 
 <pre><code>
 abstract class Iterator&lt;out T&gt; {
@@ -1081,9 +1082,11 @@ fun demo(strs: Iterator&lt;String&gt;) {
 }
 </code></pre>
 
-out T 的含义就是告诉编译器，只会从迭代器中获取数据，不会向 Iterator 中添加对象。（只出不进）编译时类型转换，实际上含义是，在编写代码的时候确定通过 out 属性通知编译器，不会试图向容器中添加对象。
+out T 的含义就是告诉编译器，只会从迭代器中获取数据，不会向 Iterator 中添加对象。（只出不进）编译时类型转换，实际上含义是，在编写代码的时候确定通过 out 属性通知编译器，不会试图向容器中添加对象，范型类仅仅是T类型实例的提供者(Provider)。
 
-与 out 相呼应的是 in 注解，in 注解用来在编译的时候告知编译器，相应的属性是可逆变的。含义与 out 相反，in 修饰的属性仅作为方法的入参，不能作为结果返回。例如：Comparable。
+与 out 相呼应的是in注解，in注解用来在编译的时候告知编译器，相应的属性是可逆变的。含义与out相反，in修饰的属性仅作为方法的入参，不能作为结果返回,只能接收，不会产出（consumer）。例如：Comparable。
+
+因为只有确保这个原则，才能保证不会造成运行时异常的风险。
 
 <pre><code>
 abstract class Comparable&lt;in T&gt; {
@@ -1097,7 +1100,9 @@ fun demo(x: Comparable&lt;Number&gt;) {
 }
 </code></pre>
 
-上面代码中因为 Comparable 不存在以 T 为结果返回的函数，因此可以将 Comparable&lt;Number&gt; 赋值给 Comparable&lt;Double&gt; 的属性。因为 Double 是 Number 的子类型，只要子类型的容器只消费这个对象，并不将对象通过函数调用结果传递给容器外，就不会造成任何问题。
+上面代码中因为 Comparable 不存在以 T 为结果返回的方法，因此可以将Comparable&lt;Number&gt; 赋值给 Comparable&lt;Double&gt; 的属性。因为 Double 是 Number 的子类型，只要子类型的容器只消费这个对象，并不将对象通过函数调用结果传递给容器外，就不会造成任何问题。
+
+### 类型转换边界
 
 ### 类型推测
 
