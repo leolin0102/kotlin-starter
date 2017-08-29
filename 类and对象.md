@@ -979,7 +979,23 @@ fun eval(expr: Expr): Double = when (expr) {
 
 ## 范型（Generics）  
 
-范型的类可以看作是一个模板，模板类也是一种对底层逻辑的抽象实现，与抽象类不同的是抽象类是通过定义抽象方法留给自擂实现来实现扩展，而范型更符合针对抽象编程，编写范型类的代码时可以纯粹的针对抽象类编程的同时，使用方又可以通过指定这个抽象类的具体实现针对具体的子类实现代码，省去了强制类型转换的必要。因此，可以针对具有同一种能力的不同类指定一套通用逻辑，并在构造模板类的时候，指定其操作的具体类型。这样整个模板类，就会变成操作此类型对象的定制类。例如：
+泛型技术允许类定义type变量，因此参性类相当于一个模板。泛型类在构造成对象的时候再指定type变量的具体类型叫做type参数。例如集合类List通常是作为容器来存放一组特定的类的实例，List就是个泛型对象List&lt;T&gt;，其中T为type变量，使用时可以指定T的类型如var users: List&lt;User&gt; = listOf(User(), User())，这时List中的type属性T就被User代替。
+
+Kotlin同时也支持函数和属性的泛型，下面是一个泛型化的扩展函数例子：
+
+fun &lt;T&gt; List&lt;T&gt;.slice(indices: IntRange): List&lt;T&gt;
+
+方法中T代表receiver和return对象的type属性，都是List&lt;T&gt;。当使用List作为特定类型的集合是，可以明确定指定T的类型，但是大多数时候，编译器可以推演出T的类型。、
+
+<pre><code>
+val letters = ('a'...'z').toList()
+println(letters.slice<Char>(0..2))
+//输出 [a, b, c]
+println(letters.slice(0..2))
+//同样输出 [a, b, c]
+</code></pre>
+
+与抽象类不同的是抽象类是通过定义抽象方法留给自擂实现来实现扩展，而范型更符合针对抽象编程，编写范型类的代码时可以纯粹的针对抽象类编程的同时，使用方又可以通过指定这个抽象类的具体实现针对具体的子类实现代码，省去了强制类型转换的必要。因此，可以针对具有同一种能力的不同类指定一套通用逻辑，并在构造模板类的时候，指定其操作的具体类型。这样整个模板类，就会变成操作此类型对象的定制类。例如：
 
 <pre><code>
 class Box&lt;T&gt;(item: T) {
@@ -998,6 +1014,16 @@ println("print box value: $box.i")
 <pre><code>
 val box = Box(1)
 </code></pre>
+
+### type属性约束
+
+Type属性的约束使得你可以对泛型的type属性可以接受的类型进行限定。例如，定义一个方法计算List集合中所有数的总和，所有的数值类型的实例都可以被求和如Int、Double或者Float，但不可以是String或者别的类型，想达到这个目的我们可以通过T：后跟一个约束来达到这个效果，List&lt;T:Number&gt;。
+
+<pre><code>
+fun &lt;T ：Number&gt; List&lt;T&gt;.sum(): T
+</code></pre>
+
+Number就是对T的上边界作为泛化类型，Int，Double等数值类型都为Number的具像花类型。通常一个类的基类就是其上界限，但也有例外。
 
 ### 类型转换 (Variance)
 
@@ -1052,7 +1078,7 @@ interface Collection&lt;E&gt; ... {
 <pre><code>
 // Java
 interface Iterator&lt;T&gt; {
-    T nextT();
+    T next();
 }
 </code></pre>
 
@@ -1103,6 +1129,8 @@ fun demo(x: Comparable&lt;Number&gt;) {
 上面代码中因为 Comparable 不存在以 T 为结果返回的方法，因此可以将Comparable&lt;Number&gt; 赋值给 Comparable&lt;Double&gt; 的属性。因为 Double 是 Number 的子类型，只要子类型的容器只消费这个对象，并不将对象通过函数调用结果传递给容器外，就不会造成任何问题。
 
 ### 类型转换边界
+
+泛型中的Type转换与类的类型转换不同，并不是通过类的父子关系来确定是否可以进行转换
 
 ### 类型推测
 
