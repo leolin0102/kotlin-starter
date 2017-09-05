@@ -1036,9 +1036,78 @@ Number就是对T的上边界作为泛化类型，Int，Double等数值类型都�
 
 泛型中类型参数限定了其取值的范围，有时我们经常会把Type与Class等同对待，但实际上两者在默写时候还是有区别，下面来详细说明一下。
 
-如果是非泛型类，则直类名就可以直接被用作类型参数的值，例如var x: String定义了一个可变变量并持有一个String类型对象。但是要注意的是，在kotlin中
+如果是非泛型类，则直类名就可以直接被用作Type的定义，例如var x: String定义了一个可变变量并持有一个String类型对象。但是要注意的是，在kotlin中每一个类都可以有两种Type，另一种是optional Type: var x: String?。
 
-如果是泛型类则情况就更复杂一些了，
+如果是泛型类会复杂一些，因为类名和类型参数共同确定是否有效即是否可以负值给一个属性或者作为一个方法的入参。因此我们不需要给范型类指定合适的类型参数才可以确定范型类的Type。例如List并不是一个Type（List是类），而指定类型属性后则可以确定其类型：List&lt;String&gt;,List&lt;Int&gt;,List&lt;String?&gt;，范型类型也可以作为类型属性 List&lt;List&lt;String&gt;&gt;,因此一个范型类存在有无限中Type的可能。
+
+Type之间存在父子关系，即一个类型的子类型Subtype。对子类型的定义是，存在一个类型A和类型B，如果我们可以在任何时候像使用type A一样的使用type B，则可以说type B是type A的subtype。例如可以将一个Int的值直接赋值给var num: Number类型的变量。但是反过来不行，无法将Number类型的值直接赋值给Int类型的变量，因为Number并不保证拥有与Int一样的能力，同样Int也不可能是String的subtype。
+
+<img src="./images/subtype.png">
+
+编译器会在编译时根据父子类型关系对代码进行安全检查，只有当我们指定的类型是范型约束类型的子类型或者是其自身，才能确保不引入运行时问题后方能编译成功。
+
+<pre><code>
+fun test(i: Int) {
+    val num: Number = i //可以编译通过，因为Int是Number的subtype
+
+    fun f(s: String) {}
+    f(i) //无法编译通过，Int不可以作为String的子类型
+}
+</code></pre>
+
+一个变量只可以保存其声明的类型或者其子类型的值，试图将不合法的类型值赋值给变量将无法编译通过。通常一个类的子类可以被当作这个类的子类型，Int是Number的子类同时也是其子类型，而Int不是String的子类，因此不可以作为String类型的subtype。一个类如果声明实现了某一个接口，则这个类是其实现接口的subtype。
+
+当遇到可控类型时Nullable（?）,则不能仅仅通过类继承关系来判定。Int?不是Int类型的subtype，因为?含义为可空，可空的值不能直接赋值给非空属性或者变量。而同一个类的非空类型可以赋值给可空类型。
+
+<img src="./images/sybtype_optional.png">
+
+明确区分子类和子类型对接下来介绍范型的类型转换非常有帮助，是否可以将一个范型类的B type属性作为值赋给这个范型类A type属性的变量？是否可以将List&lt;String&gt;传递给一个接收List&lt;Any&gt;参数的方法？如果换做是可变集合MutableList呢？
+
+第一个问题，如果B是A的子类则有以下的情况。
+
+<pre><code>
+open class A
+
+class B : A()
+
+fun testAB(v: A) {}
+
+fun testABs(v: List&lt;A&gt;) {}
+
+fun getNoneableB(): B? { return null }
+
+var b = B()
+testAB(b) //可以编译，非空类型type B可以作为合法入参对testAB进行调用
+
+var bb: B = getNoneableB() // 无法通过编译，因为B?不是B的subtype
+testAB(getNoneableB()) // 无法通过编译，因为B?不是B的subtype
+
+var bb1: B?
+bb1 = B()
+testAB(bb1) //可以过编译，因为编译器检测到虽然bb1声明时可空变量，但是已经被初始化了。
+
+if (bb1 != null) {
+    testAB(bb1) //可以通过编译,编译器同样可以通过检测if判空逻辑确定是否安全
+}
+
+var bs = listOf(B(), A())
+testABs(bs) // 可以通过编译，A和B都是A的subtype，因此List中可以同时包含这两类对象。
+
+var bbs: List<A?> = listOf(B(), A())
+
+testABs(bbs) // 无法通过编译，因为集合内可能包含有null，因此在运行时是不安全的，testABs的代码是限定List中的所有实体都非空的，因此不会做任何NullPoint保护，这一切都是由编译器完成的
+</code></pre>
+
+第二个问题，将List&lt;String&gt;作为值赋值给List&lt;Any&gt;是安全的，因为List是不可变的，即List中的实体是构造集合时确定的，不可以被更改，因此可以将List&lt;String&gt;类型的值作为List&lt;Any&gt;的subtype传给方法，或者进行赋值。但是如果是可更改集合类型呢？如果编译器允许MutableList&lt;String&gt;类型的值赋值给一个MutableList&lt;Any&gt;类型的变量则会造成安全问题，例如我们有两个变量同时引用这这个值。
+
+<pre><code>
+var datas: MutableList&lt;String&gt; = mutableListOf("a", "b")
+
+var anyDatas: MutableList&lt;Any&gt; = datas //此处将无法通过编译
+
+</code></pre>
+
+上面的代码将不会编译成功，原因是datas，anyDatas这两个变量都同时持有统一个MutableList的对象，datas的类型属性是String而anyDatas是Any，因此如果允许这样的赋值，则我们可以通过调用anyDatas的add方法将任何类型的对象添加到这个集合中，而这时datas变量类型的约束就不再确保成立，如果允许这样的赋值，则相当于在运行时引入了风险。
 
 ### 类型转换 (Variance)
 
