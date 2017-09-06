@@ -1153,7 +1153,7 @@ interface Collection&lt;E&gt; ... {
 }
 </code></pre>
 
-通过extends通配符来声明，函数接收type属性为E的子类或自身的Collection，虽然不可以将List&lt;String&gtl;类型的对象赋值给一个List&lt;Object&gt;类型的变量（类型转换）,但是通配符可以使得List&lt;Object&gt;的addAll方法接受List&lt;String&gt;并将其作为List&lt;Object&lt;,因为String extends Object是其子类。
+通过extends通配符来声明，函数接收type属性为E的子类或自身的Collection，虽然不可以将List&lt;String&gtl;类型的对象赋值给一个List&lt;Object&gt;类型的变量（类型转换）,但是通配符可以使得List&lt;Object&gt;的addAll方法接受List&lt;String&gt;并将其作为List&lt;Object&lt;,因为String extends Object是Object的子类。这个过程称之为协变换。
 
 ### 协变换
 
