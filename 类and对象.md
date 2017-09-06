@@ -996,7 +996,7 @@ fun &lt;T&gt; List&lt;T&gt;.slice(indices: IntRange): List&lt;T&gt;
 
 <pre><code>
 val letters = ('a'...'z').toList()
-println(letters.slice<Char>(0..2))
+println(letters.slice&lt;Char&gt;(0..2))
 //输出 [a, b, c]
 println(letters.slice(0..2))
 //同样输出 [a, b, c]
@@ -1082,12 +1082,12 @@ testAB(b) //可以编译，非空类型type B可以作为合法入参对testAB�
 var bb: B = getNoneableB() // 无法通过编译，因为B?不是B的subtype
 testAB(getNoneableB()) // 无法通过编译，因为B?不是B的subtype
 
-var bb1: B?
+var bb1: B?
 bb1 = B()
 testAB(bb1) //可以过编译，因为编译器检测到虽然bb1声明时可空变量，但是已经被初始化了。
 
 if (bb1 != null) {
-    testAB(bb1) //可以通过编译,编译器同样可以通过检测if判空逻辑确定是否安全
+    testAB(bb1) //可以通过编译,编译器同样可以通过检测if判空逻辑确定是否安全
 }
 
 var bs = listOf(B(), A())
@@ -1107,15 +1107,15 @@ var anyDatas: MutableList&lt;Any&gt; = datas //此处将无法通过编译
 
 </code></pre>
 
-上面的代码将不会编译成功，原因是datas，anyDatas这两个变量都同时持有统一个MutableList的对象，datas的类型属性是String而anyDatas是Any，因此如果允许这样的赋值，则我们可以通过调用anyDatas的add方法将任何类型的对象添加到这个集合中，而这时datas变量类型的约束就不再确保成立，如果允许这样的赋值，则相当于在运行时引入了风险。
+上面的代码将不会编译成功，原因是datas，anyDatas这两个变量都同时持有统一个MutableList的对象，datas的类型属性是String而anyDatas是Any，因此如果允许这样的赋值，则我们可以通过调用anyDatas的add方法将任何类型的对象添加到这个集合中，而这时datas变量类型的约束就不再确保成立，如果允许这样的赋值，则相当于在运行时引入了风险。
 
 ### 类型转换 (Variance)
 
-Java 中有种巧妙的机制，叫通配符(wildcard) List&lt;? extends E&gt;，这样任何继承自类型E的对象，都可以放入这个列表中去。Kotlin 没有这样的机制，Kotlin 引入两种机制来替代通配符：编译时转换和类型预测。
+Java 中有种巧妙的机制，叫通配符(wildcard) List&lt;? extends E&gt;，这样任何继承自类型E的对象，都可以放入这个列表中去而不需要进行强制类型转换（在对象前使用括号内指定转换的类的类型）。Kotlin 没有这样的机制在Kotlin中引入两种机制来替代通配符：编译时转换和类型预测。
 
-有一点需要注意的是在kotlin中不能简单的通过集成关系来确定一个类是否可以被范型类接受，不是所有的子类都可以顺利的作为一个范型类的输入类型（Kotlin有Optional类型的概念）。因此，kotlin使用边界的概念来界定一个类型是否可以被范型类接受。
+有一点需要注意的是，继承关系不能推倒type的父子关系，因此在kotlin中不能简单的通过集成关系来确定一个类是否符合约束，不是所有的子类都可以顺利的作为一个范型类的输入类型（Kotlin有Optional类型的概念）。因此，kotlin使用边界的概念来界定一个类型是否可以被范型类接受。
 
-Java通配符有一个限制，就是范型类之间是不可以强制类型转换的，例如范型中List&lt;String&gt;与List&lt;Object&gt;不能进行类型转换。如果允许这样的类型转换，意味着转换后的List容器可以放入所有类型，而不仅只是 String。因此下面的代码，将会在运行时抛出异（ClassCastException）。
+Java通配符有一个限制，就是范型类之间是不可以类型转换的，例如范型中List&lt;String&gt;与List&lt;Object&gt;不能进行类型转换。如果允许这样的类型转换，意味着转换后的List容器可以放入所有类型，而不仅只是 String。因此下面的代码，将会在运行时抛出异（ClassCastException）。
 
 <pre><code>
 // Java
@@ -1125,7 +1125,7 @@ objs.add(1); // 我们这里在数组的最前面添加了一个Int 类型的对
 String s = strs.get(0); // !!! ClassCastException: Cannot cast Integer to String
 </code></pre>
 
-上面的例子是为了说明，如果允许类型转换会存在异常的可能。Java禁止这样的类型转换，以此来避免运行时可能的风险。但是这样限制也有一些不便，例如，看一下Java 中的 Collection 接口中的 addAll() 函数。addAll() 函数比较直接的定义方式是：
+上面的例子是为了说明，如果允许类型转换会存在异常的可能。Java禁止这样的类型转换，以此来避免运行时可能的风险。这样限制也有一些不便，例如，看一下Java 中的 Collection 接口中的 addAll() 函数。addAll() 函数比较直接的定义方式是：
 
 <pre><code>
 // Java
@@ -1134,12 +1134,12 @@ interface Collection&lt;E&gt; ... {
 }
 </code></pre>
 
-但是这个接口是不能在下面的场景中工作的。
+但是如果这样定义Collection的addAll方法，这个接口是不能在下面的场景中工作的。
 
 <pre><code>
 // Java
 void copyAll(Collection&lt;Object&gt; to, Collection&lt;String&gt; from) {
-    to.addAll(from); // !!! 这里无法通过编译 addAll:
+    to.addAll(from); // !!! 这里无法通过编译 
     //Collection&lt;String&gt; 并不是 Collection&lt;Object&gt; 的子类
 }
 </code></pre>
@@ -1153,7 +1153,20 @@ interface Collection&lt;E&gt; ... {
 }
 </code></pre>
 
-可以定义一个简单的原则，如果一个范型类仅仅作为一个容器（provider）提供实例，且不操作实例（consume），即不调用实例的任何方法，则可以使用类型转换将 String 容器转换成 Object 容器，并从中读取对象。反过来，如果将 String 对象写入 Object 集合，也是可以的。在 Java 中可以定义 List&lt;? super String&gt; 为 List&lt;Object&gt; 的子类，称作逆变换。Kotlin中使用关键字out来告诉编译器范型类只做为实例的provider，因此可以进行逆变。
+通过extends通配符来声明，函数接收type属性为E的子类或自身的Collection，虽然不可以将List&lt;String&gtl;类型的对象赋值给一个List&lt;Object&gt;类型的变量（类型转换）,但是通配符可以使得List&lt;Object&gt;的addAll方法接受List&lt;String&gt;并将其作为List&lt;Object&lt;,因为String extends Object是其子类。
+
+### 协变换
+
+可以定义一个简单的原则，如果一个范型类仅仅作为一个容器（Producer）提供实例，且不操作实例即不调用实例的任何方法，则可以使用类型转换将 String 容器转换成 Object 容器，并从中读取对象。反过来，如果将 String 对象写入 Object 集合，也是可以的。在 Java 中可以定义 List&lt;? super String&gt; 为 List&lt;Object&gt; 的子类，称作逆变换。Kotlin中使用关键字out来告诉编译器范型类只做为实例的Producer，因此可以进行逆变。
+
+out关键字修饰一个泛型type属性，限定一个type属性只可以出现在方法的返回类型上，不可以出现在任何方法的入参列表中。
+
+<pre><code>
+class Company&lt;out T: Person&gt; {
+    val size: Int get() = ...
+    operator fun get(i: Int): T {} 
+}
+</code></pre>
 
 ### 编译时类型转换
 
@@ -1425,8 +1438,6 @@ val obj = object { val name: String = "Leo" } //这个对象在被定义的同�
 </code></pre>
 
 ### 对象表达式
-
-
 
 使用关键字 object 来创建一个对象来实现匿名类：
 
