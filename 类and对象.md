@@ -1157,16 +1157,58 @@ interface Collection&lt;E&gt; ... {
 
 ### 协变换
 
-可以定义一个简单的原则，如果一个范型类仅仅作为一个容器（Producer）提供实例，且不操作实例即不调用实例的任何方法，则可以使用类型转换将 String 容器转换成 Object 容器，并从中读取对象。反过来，如果将 String 对象写入 Object 集合，也是可以的。在 Java 中可以定义 List&lt;? super String&gt; 为 List&lt;Object&gt; 的子类，称作逆变换。Kotlin中使用关键字out来告诉编译器范型类只做为实例的Producer，因此可以进行逆变。
+协变的定义是一个范型类，例如范型Producer&lt;T&gt;存在两种T的类型type A和type B，如果A是B的subtype，则Producer&lt;A&gt;是Produce&lt;B&gt;的subtype。协变换是指当type属性与实际不匹配的时候，我们可以通过协变换将范型类需要的type的subtype实体作为方法的入参传入或者作为方法的结果被返回。Kotlin中使用out关键字来定义类型属性为可协变类型，同时使用out修饰符修饰的类型属性，只可以以方法的结果被返回，不可以作为方法的输入参数的类型,我们可以把out理解为只出不进，而这个范型类则是这个out type类型实例的提供者（Producer）。
+为什么out限定T只能出现在方法的返回结果位置呢？我们这里来深入的理解一下subtype的含义，当且仅当type A的能力包含type B的所有能力时，A才可以个是B的subtype，实际上，A必须保证提供B可以提供的所有能力（方法，属性），而Producer类声明只会对外提供type B类型的对象，因此即使Producer实际上对外提供的对象时type A，但是因为A实现了B的所有能力，而相应的无求方仅仅需要type B的能力，因此将type A对象协变换提供给需求方是安全的。
 
-out关键字修饰一个泛型type属性，限定一个type属性只可以出现在方法的返回类型上，不可以出现在任何方法的入参列表中。
+我们来看一下out的使用方式，下面首先看下面的这段代码。
 
 <pre><code>
-class Company&lt;out T: Person&gt; {
-    val size: Int get() = ...
-    operator fun get(i: Int): T {} 
+
+public class B {
+    fun sayHello() { println("hello") }
+}
+
+class A: B() {
+    fun talkMore() {}
+}
+
+interface Producer&lt;out T: B&gt; {
+    fun produce(): T
+    fun consume(v: T) //out 修饰的T类型不可以作为方法的入参，编译器会返回异常
 }
 </code></pre>
+
+可以修改这个定义使得Producer只允许操作B或者其subtype A。
+
+<pre><code>
+interface Producer&lt;out T: B&lt; {
+    fun produce(): T
+}
+</code></pre>
+
+out关键字修饰一个泛型type属性，限定一个type属性只可以出现在方法的返回类型上，不可以出现在任何方法的入参列表中。下面我们定义一个Producer的实现将type A实体作为produce方法的type B类型结果返回。
+
+<pre><code>
+class Producer&lt;out T: B&gt; {
+    fun produce(): T { return A() as T }
+}
+
+//定义一个方法接收Producer并调用B类的sayHello方法
+fun sayHello(producer: Producer&lt;B&gt;) {
+    producer.produce().sayHello()
+}
+
+//构造一个ProducerA的变量
+var producerA = Producer&lt;A&gt;()
+sayHello(producer) //可以通过编译结果输出 hello 
+
+</code></pre>
+
+代码中producerA的类型是Producer&lt;A&gt;，sayHello方法的入参producer类型是Producer&lt;B&gt;,上面的代码如果去掉out则无法通过编译，加上out后，如果Producer中的方法的入参中出现out修饰的type属性，则也会编译失败，kotlin通过这样的互斥检测确保编译后的代码足够健壮。
+
+### 逆变换
+
+逆变换相当于协变换的镜像，之所以说是镜像含义是所有的地方都是相反的。逆变换使用in关键字修饰范型类型属性，被in修饰的类型in T只能出现在方法的入参，且不能作为方法的返回类型，同时逆变换则是将super type变换为subtype。范型类则是T类型的消费者（Consumer）。
 
 ### 编译时类型转换
 
