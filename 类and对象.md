@@ -1208,64 +1208,31 @@ sayHello(producer) //可以通过编译结果输出 hello
 
 ### 逆变换
 
-逆变换相当于协变换的镜像，之所以说是镜像含义是所有的地方都是相反的。逆变换使用in关键字修饰范型类型属性，被in修饰的类型in T只能出现在方法的入参，且不能作为方法的返回类型，同时逆变换则是将super type变换为subtype。范型类则是T类型的消费者（Consumer）。
+逆变换相当于协变换的镜像，之所以说是镜像含义是所有的地方都是相反的。逆变换使用in关键字修饰范型类型属性，被in修饰的类型in T只能出现在方法的入参，且不能作为方法的返回类型，同时逆变换则是将super type变换为subtype。范型类则是T类型的消费者（Consumer），也可将逆变换理解为，in修饰符使得原来类型的方向逆转，上面协变换的时候A是B的subtype，而现在变成了B是A的subtype。
 
-### 编译时类型转换
-
-例如定义一个范型接口 Iterator&lt;T&gt; 其中没有函数以 T 类型作为入参，仅含有一个返回类型为 T 的函数 next。
+我们先看一下Comparator接口的定义,Comparator接口是集合类中定义的接口，用在对集合内数据排序的时候提供比较规则的实现的。
 
 <pre><code>
-// Java
-interface Iterator&lt;T&gt; {
-    T next();
+interface Comparator&lt;in T&gt; {
+    fun compare(e1: T, e2: T): Int { /*...*/ }
 }
 </code></pre>
 
-这样的场景下，将 Iterator&lt;String&gt; 类型转换成一个 Iterator&lt;Object&gt; 属性是安全的，因为没有函数会试图向容器中添加对象，这样的范型类称为provider。
-
-但是下面这种情况依然是不允许的：
-<pre><code>
-// Java
-void demo(Iterator&lt;String&gt; strs) {
-    Iterator&lt;Object&gt; objects = strs; // !!! 在java中，这样赋值是不允许的
-    // ...
-}
-</code></pre>
-
-为了解决这个问题，必须将迭代器声明为 Iterator&lt;? extends Object&gt;,这样可以放入任何 Object 对象的子类中，同时模板类中，仅调用对 Object 类型的代码，但是，不能再把这个迭代器再转化到 Iterator&lt;String&gt;，因为不确定 Object 容器内存存储的是否都是 String 类型。
-
-在 Kotlin 中，有一种方式可以告知编译器。编译时类型转换，可以对Iterator的类型参数前增加一个注解来告知编译器，我们的代码将保证范型类型仅作为函数的结果返回类型,但是不会作为函数的入参。
+这个接口中的唯一的一个方法compare仅仅接收两个T类型的参数，而方法不会返回T类型的对象作为结果，因此这个接口是T类型的消费者（Consumer）。因此,Comparator&lt;Any&gt;是Comparator&lt;String&gt;的逆变换的subtype。
 
 <pre><code>
-abstract class Iterator&lt;out T&gt; {
-    abstract fun nextT(): T
+val anyComparator = Comparator&lt;Any&gt; {
+    e1, e2 -> e1.hashCode() - e2.hashCode()
 }
-
-fun demo(strs: Iterator&lt;String&gt;) {
-    val objects: Iterator&lt;Any&gt; = strs // This is OK, since T is an out-parameter
-    // ...
-}
+val strings = listOf("a", "b")
+strings.sortedWith(anyComparator)
 </code></pre>
 
-out T 的含义就是告诉编译器，只会从迭代器中获取数据，不会向 Iterator 中添加对象。（只出不进）编译时类型转换，实际上含义是，在编写代码的时候确定通过 out 属性通知编译器，不会试图向容器中添加对象，范型类仅仅是T类型实例的提供者(Provider)。
+虽然代码中的anyComparator是Comparator&lt;Any&gt;类型的，但因为接口定义type T为逆变换，所以即使List&lt;String&gt;中的sortedWith方法需要Comparator&lt;String&gt;类型，但是我们仍然可以将anyComparator作为sortedWith的入参。我们可以思考一下，既然Comparator&lt;Any&gt;的compare方法不将Any类型的对象返回给List&lt;String&gt;就不会对List&lt;String&gt;的安全性造成任何影响，Comparator&lt;Any&gt;内部只使用了Any的能力即hashCode方法，因此即使传递给compare中e1,e2传递的是String类型的对象，也不会有任何问题。
 
-与 out 相呼应的是in注解，in注解用来在编译的时候告知编译器，相应的属性是可逆变的。含义与out相反，in修饰的属性仅作为方法的入参，不能作为结果返回,只能接收，不会产出（consumer）。例如：Comparable。
+### 定义处类型转换
 
-因为只有确保这个原则，才能保证不会造成运行时异常的风险。
-
-<pre><code>
-abstract class Comparable&lt;in T&gt; {
-    abstract fun compareTo(other: T): Int
-}
-
-fun demo(x: Comparable&lt;Number&gt;) {
-    x.compareTo(1.0) // 1.0 has type Double, which is a subtype of Number
-    // Thus, we can assign x to a variable of type Comparable&lt;Double&gt;
-    val y: Comparable&lt;Double&gt; = x // OK!
-}
-</code></pre>
-
-上面代码中因为 Comparable 不存在以 T 为结果返回的方法，因此可以将Comparable&lt;Number&gt; 赋值给 Comparable&lt;Double&gt; 的属性。因为 Double 是 Number 的子类型，只要子类型的容器只消费这个对象，并不将对象通过函数调用结果传递给容器外，就不会造成任何问题。
+### 使用处类型转换
 
 ### 类型转换边界
 
