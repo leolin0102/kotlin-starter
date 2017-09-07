@@ -1277,9 +1277,20 @@ fun &lt;T&gt; copyData(source: MutableList:&lt;out T&gt;, destination: MutableLi
 
 正确的定义这个方法的方式是将source的类型由MutableList改成List&lt;T&gt;,因为List的定义是List&lt;out T&gt;因此copyData中的source改为List&lt;T&gt;就可以了，无需再指定out。
 
-### 类型转换边界
+### * 通配符
 
-泛型中的Type转换与类的类型转换不同，并不是通过类的父子关系来确定是否可以进行转换
+使用*号通配符的原因是当前我们没有足够的信息确定范型类中的type属性具体的类型，例如，如果定义一个方法的行为是根据一个不确定的输入变量来决定返回的范型的类型时，这时我们在定义时缺少这个传入的属性的信息，因此可以使用*号通配符来替代，要注意的是MutableList&lt;*&gt;不等于MutableList&lt;Any?&gt;，后者的含义是一个可变集合其中可以放入任何type的对象即不同类型的对象可以同时放入这个集合，而前者则代表我们不知道到底是哪种类型的对象会放入集合，但是这个集合只允许保存一种类型的多个对象。因此当使用*号通配符定义一个集合变量var list: List&lt;*&gt;时可以将任何类型的集合赋值给这个变量，但是当我们试图想通过这个类型的变量对集合添加新的元素时会得到运行时异常。
+
+<pre><code>
+val list: MutableList&lt;Any?&gt; = mutableListOf('a', 1, "bc")
+val chars = mutableListOf('a', 'b', 'c')
+val elements: MutableList&lt;*&gt; = if (Random().nextBoolean()) list else chars
+elements.add(5) //可以过编译但运行时将会抛出异常
+
+println(elements.first()) //代码可以过编译，运行时输出 a
+</code></pre>
+
+MutableList&lt;*&gt;的变量代表使用方明确集合中的类型是不确定的，因此只能编写代码操作Any?类型的方法，不会引入运行时风险，但是因为从语法上这个变量无法提供到底可以把什么类型的对象放入集合，因此禁止调用add方法添加任何类型的元素。因此*号通配符和in合用时没有人和意义的，因为编译器无法确定到底哪种类型可以被消费。
 
 ### 类型推测
 
