@@ -1230,9 +1230,52 @@ strings.sortedWith(anyComparator)
 
 虽然代码中的anyComparator是Comparator&lt;Any&gt;类型的，但因为接口定义type T为逆变换，所以即使List&lt;String&gt;中的sortedWith方法需要Comparator&lt;String&gt;类型，但是我们仍然可以将anyComparator作为sortedWith的入参。我们可以思考一下，既然Comparator&lt;Any&gt;的compare方法不将Any类型的对象返回给List&lt;String&gt;就不会对List&lt;String&gt;的安全性造成任何影响，Comparator&lt;Any&gt;内部只使用了Any的能力即hashCode方法，因此即使传递给compare中e1,e2传递的是String类型的对象，也不会有任何问题。
 
-### 定义处类型转换
+### 定义处变换（Declaration-site variance）
+
+协变换out和逆变换in修饰符可以出现在两个地方，一个是定义类的时候（定义处变换）,以及在使用范型类的方法的入参处使用in、out，使用处变换。定义处变换的易处在于只需要在声明类的时候指定变换性质，这样所有用到的地方都生效，即所有方法都无需设置就继承范型类定义时的变换设置。例如Kotlin标准库中的List接口：List&lt;out T&gt;就是定义处变换。
 
 ### 使用处类型转换
+
+使用处变换是指in、out出现在方法的入参位置，也就是转换性质是在使用方确定的，支持使用处设置in、out是因为某些范型类即是Provider又是Consumer，例如MutableList中的方法既有将type作为入参的，也有将type作为结果return的。但是从范型类的使用方来讲，有的时候使用方只会将范型类作为Provider或者Consumer，不会同时用到两种规则,例如：
+
+<pre><code>
+fun &lt;T&gt; copyData(source: MutableList&lt;T&gt;, destination: MutableList&lt;T&gt;) {
+    for (item in source) {
+        destination.add(item)
+    }
+}
+</code></pre>
+
+这个函数的作用是将source内的元素添加到destination中，虽然source和destination都是MutableList&lt;T&gt;，但是copyData函数只从source集合读取数据，并只像destination集合写入数据，copyData方法的实现不需要限制两个集合的type属性必须匹配，完全可以安全的将MutableList&lt;String&gt;中的元素放入到MutableList&lt;Any&gt;集合中。
+
+如果想做到这点，可以通过引入第二个type属性，下面对copyData进行修改：
+
+<pre><code>
+fun &lt;T: R, R&gt; copyData(source: MutableList&lt;T&gt;, destination: MutableList&lt;E&gt;) {
+    for (item in source) {
+        destination.add(item)
+    }
+}
+
+val ints = mutableListOf(1, 2, 3)
+val anyItems = mutableListOf&lt;Any&gt;()
+copyData(ints, anyItems)
+println(anyItems) // 输出 [1, 2, 3]
+</code></pre>
+
+声明两个范型类型属T和R，同时显示T必须是R的subtype就可以解决这个问题。而Kotlin中可以使用out来修饰source的MutableList中的T来达到同样的效果，out的含义就是，任何T的subtype都可以在传入的时候协变换成T。
+
+<pre><code>
+fun &lt;T&gt; copyData(source: MutableList:&lt;out T&gt;, destination: MutableList&lt;T&gt;) {
+    for (item in source) {
+        destination.add(item)
+    }
+}
+</code></pre>
+
+使用处包括方法的入参以及声明的用语保存对象的变量，当声明变量的时候制定out属性后，编译器同样会限制所有代码只能将这个变量用作Producer。相反如果使用in修饰变量的类型，则编译器不允许我们将变量用作Consumer。
+
+正确的定义这个方法的方式是将source的类型由MutableList改成List&lt;T&gt;,因为List的定义是List&lt;out T&gt;因此copyData中的source改为List&lt;T&gt;就可以了，无需再指定out。
 
 ### 类型转换边界
 
