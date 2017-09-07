@@ -1292,50 +1292,6 @@ println(elements.first()) //代码可以过编译，运行时输出 a
 
 MutableList&lt;*&gt;的变量代表使用方明确集合中的类型是不确定的，因此只能编写代码操作Any?类型的方法，不会引入运行时风险，但是因为从语法上这个变量无法提供到底可以把什么类型的对象放入集合，因此禁止调用add方法添加任何类型的元素。因此*号通配符和in合用时没有人和意义的，因为编译器无法确定到底哪种类型可以被消费。
 
-### 类型推测
-
-类型推测是编译器在容器被使用的时候，通过上下文推测出范型参数的类型的方式。有的时候，实现的模板类没有办法保证只返回类型 T，例如:
-
-<pre><code>
-class Array&lt;T&gt;(val size: Int) {
-    fun get(index: Int): T { /* ... */ }
-    fun set(index: Int, value: T) { /* ... */ }
-}
-</code></pre>
-
-这个范型类不是非常的灵活，当实现一个数组拷贝函数的时候，同样只能实现两个 Any 的数组间的 copy，但是没法通过范型指定任何 Any 的子类的数组 copy 到 Any 的数组中。
-
-<pre><code>
-fun copy(from: Array&lt;Any&gt;, to: Array&lt;Any&gt;) {
-    assert(from.size == to.size)
-    for (i in from.indices)
-        to[i] = from[i]
-}
-
-val ints: Array&lt;Int&gt; = arrayOf(1, 2, 3)
-val any = Array&lt;Any&gt;(3) { "" }
-copy(ints, any) // Error: 这里会抛出ClassCaseException异常。
-</code></pre>
-
-在 Kotlin 中，可以通过使用时类型转换来解决这个问题，即不再 Array 类的参数上使用 out，而是在使用这个模板的函数上使用 out，以上面的 copy 为例，只需要在 from 数组上使用 out 就可以解决上面发生的异常。
-
-<pre><code>
-fun copy(from: Array&lt;out Any&gt;, to: Array&lt;Any&gt;) {
-    // ...
-}
-</code></pre>
-
-同样，Kotlin 也支持使用时逆变，即在使用模板的函数中使用 in 关键字。例如若要实现使用默认值填充整个数组：
-
-<pre><code>
-fun fill(dest: Array&lt;in String&gt;, value: String) {
-    // ...
-}
-</code></pre>
-
-这里使用 in 是因为数组本身是 Any 类型的，fill 函数本身并不从数组里获取对象，仅是将 Any 的子类 String 类型的对象赋值给数组中，也就是 dest 数组仅消费 value，但是不产出 value。
-
-
 ### 函数范型
 
 Kotlin 的特点是函数式编程与面向对象编程正交，即同时存在且不相互产生副作用，因此，面向对象中的范型也被延伸到了函数中。
@@ -1360,29 +1316,9 @@ fun &lt;T&gt; T.basicToString() : String { // extension function
 val l = singletonList&lt;Int&gt;(1)
 </code></pre>
 
-
-### 上界限制 （Upper bounds）
-
-在开发中最普遍的约束限制就是指定范型类型的上界限制，上界限值对应 Java 中的 extends 关键字：
-
-<pre><code>
-fun &lt;T : Comparable&lt;T&gt;&gt; sort(list: List&lt;T&gt;) {
-    // ...
-}
-</code></pre>
-
-值得一提的是，这里的范型是双重约束，即首先 list 的类型必须是 T 的子类，且 T 必须是 Comparable&lt;T&gt; 的子类。例如：
-
-<pre><code>
-sort(listOf(1, 2, 3)) // OK. Int is a subtype of Comparable&lt;Int&gt;
-sort(listOf(HashMap&lt;Int, String&gt;())) // Error: HashMap&lt;Int, String&gt; is not a subtype of Comparable&lt;HashMap&lt;Int, String&gt;&gt;
-</code></pre>
-
-因为 HashMap 并未实现或者继承自 Comparable 接口，因此，HashMap&lt;Int, String&gt; 不是 Comparable&lt;HashMap&lt;Int, String&gt;&gt; 的子类型。
-
 ## 内嵌类
 
-可以在一个类内部声明一个内嵌类，声明内嵌类，一是可以空置其生命周期，二是可以空置可见范围。当内嵌类的类型为内部类（Inner Class）时，只有外层类实例在的时候，内部类才能存在，因此可以在内部类直接方便引用外部类的属性和调用方法。
+可以在一个类内部声明一个内嵌类，声明内嵌类，一是可以控制其生命周期，二是可以控制可见范围。当内嵌类的类型为内部类（Inner Class）时，只有外层类实例在的时候，内部类才能存在，因此可以在内部类直接方便引用外部类的属性和调用方法，因为面向对象编程需要将所有代码以类为单位进行组织，但是有的时候某个数据结构仅仅在类内部使用，例如某个类方法返回一个复杂结果给其他方法使用，因此可以通过定义一个内部类来对数据格式后者某些状态进行封装。
 
 ### 内部类
 
@@ -1399,9 +1335,41 @@ class Outer {
 val demo = Outer().Inner().foo() // == 1
 </code></pre>
 
-### 匿名内部类
+### object关键字
 
-有些时候一些很轻量的，没有重用需求的接口实现，没有必要创建一个专门的类来容纳接口的实现，可以使用 object 关键字来生成一个匿名内部类：
+object的意义是梆定定义一个类和构造这个类的一个实例这两个动作，也就是object语法可以同时完成这两个功能。
+
+object使得我们可以更加简单的实现单例：
+
+<pre><code>
+object Client {
+    val host = "Leo"
+    fun start()
+    fun stop()
+}
+
+Client.start()
+</code></pre>
+
+Client对象被object关键字进行声明并构造，而使用的时候，可以直接拿单例类的名字作为引用单例对象的变量名。与类相同，object定义的对象有类相同的元素包括属性、方法、构造块、声明实现接口等。唯一的区别是object定义的对象不包含构造函数，因此我们也不能单独执行val client = Client()，且object使得Client这个对象在定义时即被创建出来。
+
+object关键字声明对象同样可以继承其他类或者声明实现接口。通常情况下在第三方库需要我们实现其定义的扩展接口的时候可以很方便的利用object机制实现接口，不要让object有任何状态。例如构造一个object实现java.util.Comparator接口来辅助集合类排序，一个Comparator的实现不会保存任何状态，仅仅接收两个对象并计算出那个大那个小。而一个Comparator几乎永远都不带有任何状态。这个例子是object特性的最佳场景。而为什么object的接口实现不能带有状态，原因和servlet必须是无状态道理是一样，如果我们允许object作为接口的实现并保存状态，当多个线程同时调用到object的方法时则结果会不可预测，因为多个线程实际上时对同一个对象进行调用，不是线程安全的（想想两个用户同时对服务器发起请求，由同一个servlet进行处理时，由状态的servlet会造成两个请求的处理线程都同时读写同一个状态会带来什么问题，结果完全无法预测，A用户得到了B用户的数据？）。
+
+### 单例、依赖注入和依赖倒转容器（IOC）
+
+object与单例模式相同，不适合在大型复杂的项目中大量使用，因为复杂项目势必需要引入组件化架构，通过接口对组件间依赖进行解耦合从而实现项目的可扩展，功能可插拔，多团队并行开发等目的。而直接使用单例会将组件间的实现直接进行耦合，因为我们的代码中会出现依赖的组件的具体的类，而不是仅仅出现依赖组件对外提供的interface。例如，上面定义的Client是一个单例，我们要想调用其方法就必须通过类名后跟方法，通常在java代码中会出现Client.shareInstance().start()的代码，这样就造成我们直接在内部决定我们依赖Client这个类，无法通过不更改我们的代码的情况下，切换Client.start方法的具体实现，如果我们只有一处使用这个单例还好，倘若由不计其数的地方都访问这个Client又如何，最直接的后果就是，你的所有组件都必须同Client组件一起编译，一起共存，如果每个组件都通过单例对外暴露了自己的类呢，那我们的所有组件都必须依赖其它所有组件的存在才可以进行开发和编译，当我们团队增加到10人以上，各自维护一部分组件的时候，那个时候相信每天合并代码将会是一场噩梦，而且，单元测是永远都不可能进行，也不可能在运行时通过不同的配置文件进行设置。
+
+一种好的思想是依赖注入，依赖注入的概念是两个类的依赖关系或者类和接口的某个具体实现类的依赖关系，不由两个类之间来确定（通常指不由使用方决定），使用方将依赖关系的决定权交出，由外部类通过构造方法传参或者设置属性将依赖的类的实例注入到需要的对象中形成依赖反转，Spring framework框架核心的组件IOC（依赖反转容器）就是一个通用的依赖注入框架，同时Spring Framework自身的接口实现都是通过依赖注入交付到业务逻辑层的，而且IOC容器通过java的Proxcy动态代理机制，实现了lazy loading，我们从IOC容器得到的对象只是一个动态代理对象，而不是真正的我们需要的对象，当我们第一次调用对象的成员方法或者访问属性时，动态代理类才会去创建真正的类的实例。IOC通过lazy loading还使得我们免去了频繁调整对象构造顺序的问题。
+
+使用IOC的一个好处在于使用IOC容器使得我们在编译时依赖最底层的接口进行编程，而在运行时，IOC容器会在最上层将各个模块的类的实例以底层接口的想时下发到各个组件完成整个程序组件间的组装，这是另一个依赖反转的理解，即编译时模块代码依赖底层接口编码，运行时相反依赖上层IOC注入接口实现。
+
+### 在java代码中使用Kotlin的object对象
+
+
+
+### 匿名内部对象
+
+当类定义仅有一处使用，没有重用需求的接口实现，没有必要进行命名，仅仅创建一个接口的匿名实现会非常方便，可以使用 object 关键字来生成一个匿名内部对象，下面看一个例子使用object定义一个匿名对象来实现鼠标点击事件的监听者：
 
 <pre><code>
 window.addMouseListener(object: MouseAdapter() {
@@ -1416,11 +1384,13 @@ window.addMouseListener(object: MouseAdapter() {
 })
 </code></pre>
 
-如果要实现的接口仅仅只有一个抽象方法，则可以使用接口类型后加一个 lambda 表达式来定义匿名内部类。
+上面代码中创建的这个实现MouseAdapter接口的对象并没有名字，代码中object：会创建一个匿名对象，后跟实现的接口的具体的名字以及以大括号内包含接口的具体实现。如果要实现的接口仅仅只有一个抽象方法，则可以使用接口类型后加一个 lambda 表达式来定义匿名内部对象。
 
 <pre><code>
 val listener = ActionListener { println("clicked") }
 </code></pre>
+
+
 
 ## 枚举类
 
