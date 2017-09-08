@@ -721,7 +721,7 @@ fun C.foo(i: Int) { println("extension") }
 C().foo(1) //will print extension
 </code></pre>
 
-### 被扩展类可控
+### 被扩展类可空
 
 扩展函数可以使用 ？ 标识声明被扩展对象（receiver）为可空类型，代表被扩展的对象本身有可能为空，可以使用 ？ 标识修饰扩展函数，并在函数内对 this 进行非空判断。
 
@@ -747,26 +747,6 @@ val <T> List<T>.lastIndex: Int
 </code></pre>
 
 因为扩展机制是静态时建立的，实际上扩展属性并不在类内部，编译器会为扩展属性生成新的对象并与被扩展对象梆定，因此扩展属性是没有办法有辅助字段的，因此构造函数内不可以使用扩展属性。
-
-### 伴生对象的扩展
-
-如果类中存在伴生对象，同样可以对其进行函数扩展和属性扩展。
-
-<pre><code>
-class MyClass {
-    companion object { } // will be called "Companion"
-}
-
-fun MyClass.Companion.foo() {
-    // ...
-}
-</code></pre>
-
-对伙伴对象的调用方式与普通类的函数和属性没有区别
-
-<pre><code>
-MyClass.foo()
-</code></pre>
 
 ### 扩展的范围
 
@@ -1316,13 +1296,26 @@ fun &lt;T&gt; T.basicToString() : String { // extension function
 val l = singletonList&lt;Int&gt;(1)
 </code></pre>
 
-## 内嵌类
+## 嵌套类
 
-可以在一个类内部声明一个内嵌类，声明内嵌类，一是可以控制其生命周期，二是可以控制可见范围。当内嵌类的类型为内部类（Inner Class）时，只有外层类实例在的时候，内部类才能存在，因此可以在内部类直接方便引用外部类的属性和调用方法，因为面向对象编程需要将所有代码以类为单位进行组织，但是有的时候某个数据结构仅仅在类内部使用，例如某个类方法返回一个复杂结果给其他方法使用，因此可以通过定义一个内部类来对数据格式后者某些状态进行封装。
+可以在类中定义另外一个类称之为嵌套类。
+
+<pre><code>
+class Outer {
+    private val bar: Int = 1
+    class Nested {
+        fun foo() = 2
+    }
+}
+
+val demo = Outer.Nested().foo() // 输出 2
+</code></pre>
 
 ### 内部类
 
-内部类使用 inner 关键字定义，下面的代码实现了一个内部类，提供 foo 函数将外层类实例中的 bar 属性传递出去。
+可以通过inner关键字定义一个内部内嵌累，当内嵌类的类型为内部类（Inner Class）时，编译器会为内部内嵌累生成一个对外部累的引用变量，同时将外部类的实例赋值给这个变量。
+
+下面的代码实现了一个内部类，提供 foo 函数将外层类实例中的 bar 属性传递出去。
 
 <pre><code>
 class Outer {
@@ -1335,10 +1328,11 @@ class Outer {
 val demo = Outer().Inner().foo() // == 1
 </code></pre>
 
+注意：由于inner class实例可以被创建的前提是其外部类的实例先被创建出来，因此上面两段代码的区别在于一个是Outer.Nested()而内部类的构造是Outer().Inner()。
+
 ### object关键字
 
 Kotlin 通过对象声明的方式，极大的简化了单实例类的实现。比 Groovy 还简单。
-
 
 object的意义是梆定定义一个类和构造这个类的一个实例这两个动作，也就是object语法可以同时完成这两个功能。
 
@@ -1371,9 +1365,17 @@ object与单例模式相同，不适合在大型复杂的项目中大量使用�
 工程师对单例的态度，应该是会用这个设计模式，并且会选择在正确的地方来使用，而不是在所有的地方。
 
 
-### 对象表达式
+## 对象表达式和声明
 
-使用关键字 object 来创建一个对象来实现匿名类：
+有的时候需要创建一个对象来对一个后续的类的实现进行修改，但因为只有一处会用到，且不大可能有代码重用的必要，因此不想为此创建一个新类，就可以使用对象表达式和对象声明。对象表达式最简形式甚至可以只有一行。
+
+<pre><code>
+val obj = object { val name: String = "Leo" } //这个对象在被定义的同时，被构造出来，同时赋值给了obj这个属性。
+</code></pre>
+
+### 匿名内部类
+
+匿名内部类的实例可以使用object直接定义并初始化：
 
 <pre><code>
 window.addMouseListener(object : MouseAdapter() {
@@ -1387,9 +1389,16 @@ window.addMouseListener(object : MouseAdapter() {
 })
 </code></pre>
 
+上面代码中创建的这个实现MouseAdapter接口的对象并没有名字，代码中object：会创建一个匿名对象，后跟实现的接口的具体的名字以及以大括号内包含接口的具体实现。如果要实现的接口仅仅只有一个抽象方法，则可以使用接口类型后加一个 lambda 表达式来定义匿名内部对象。
+
+<pre><code>
+val listener = ActionListener { println("clicked") }
+</code></pre>
+
+
 实现UI组建的事件回调是使用匿名类的最普遍的场景，因为每一个事件的回调，都是一个用户特定相互独立的交互，但是不推荐实现逻辑非常复杂的匿名类，可以把这样的匿名类当作 UI 事件与业务逻辑接口之间的桥接，或者“胶水”。例如，如果构造一个匿名类，实现了接受一条 JSON 数据并保存到数据库中，当另外一处事件同样需要做对相同数据格式的 JSON 数据进行持久化的时候，就无法重用之前的匿名类了，如果这个时候拷贝代码到新的匿名类中来解决这个问题，那就等于是给自己埋下了隐患，拷贝的次数越多，代码质量就会越差。
 
-也不要在匿名类中再实现新的匿名类，这样的作会很容易产生怪兽级的代码块，更多的缩进，更长的代码块。一个比较有代表性的 case，如果实现了一个网络层框架，支持异步发送数据，并通过回调来返回服务器的 respone，用户通过点击按钮来出发请求，返回的结果需要保存到数据库，这个时候，有很大的动机让开发人员写出匿名类中创建匿名类的设计，这样不好的是，把整个UI事件响应，数据串行化，反串行化，数据库持久和业务逻辑，全部 all in one 的实现在了一起，没有办法进行重用了。这样的设计最会引诱开发人员去简单粗暴地使用 copy 的方式，来克隆实现。即使知道应该怎么解决，也没有办法保证团队的其他人，不这么做。
+也不要在匿名类中再实现新的匿名类，这样的作会很容易产生怪兽级的代码块，更多的缩进，更长的代码块。一个比较有代表性的例子是如果实现了一个网络层框架，支持异步发送数据，并通过回调来返回服务器的结果，用户通过点击按钮来出发请求，返回的结果需要保存到数据库，这个时候有很大的动机让开发人员写出匿名类中创建匿名类的设计，这样不好的是把整个UI事件响应，数据串行化，反串行化，数据库持久和业务逻辑，全部 all in one 的实现在了一起，没有办法进行重用了。
 
 <pre><code>
 
@@ -1414,120 +1423,38 @@ window.addMouseLinstener(object : MouseAdapter() {
 
 ### 在java代码中使用Kotlin的object对象
 
+Kotlin编译器会将一个object定义的Kotlin类编译成一个java类，其中包含一个叫INSSTANCE的static字端来持有这个单实例。因此如果想在java代码中使用Kotlin中object定义的单实例，可以直接在java代码中访问类的INSTANCE静态字端。
 
-
-### 匿名内部对象
-
-当类定义仅有一处使用，没有重用需求的接口实现，没有必要进行命名，仅仅创建一个接口的匿名实现会非常方便，可以使用 object 关键字来生成一个匿名内部对象，下面看一个例子使用object定义一个匿名对象来实现鼠标点击事件的监听者：
-
-<pre><code>
-window.addMouseListener(object: MouseAdapter() {
-
-    override fun mouseClicked(e: MouseEvent) {
-        // ...
-    }
-
-    override fun mouseEntered(e: MouseEvent) {
-        // ...
-    }
-})
-</code></pre>
-
-上面代码中创建的这个实现MouseAdapter接口的对象并没有名字，代码中object：会创建一个匿名对象，后跟实现的接口的具体的名字以及以大括号内包含接口的具体实现。如果要实现的接口仅仅只有一个抽象方法，则可以使用接口类型后加一个 lambda 表达式来定义匿名内部对象。
+／* Java */
+CaseInsensitiveFileComparator.INSTANCE.compare(file1, file2)
 
 <pre><code>
-val listener = ActionListener { println("clicked") }
-</code></pre>
-
-### 匿名类
-
-枚举类可以定义自己的匿名类，一般当一个内幕类定义了抽象函数要求每一个枚举类实例都实现的时候，可以在枚举类中定义抽象函数，例如：下面的例子实现一个非常简单的状态控制模型，每个状态都必须通过实现 signal 函数来指定下一个状态值。可以通过定义匿名类来为每一个状态提供 signal 的实现。
-
-<pre><code>
-enum class ProtocolState {
-    WAITING {
-        override fun signal() = TALKING
-    },
-
-    TALKING {
-        override fun signal() = WAITING
-    };
-
-    abstract fun signal(): ProtocolState
+class CaseInsensitiveFileComparator {
+    public static INSTANCE = new CaseInsensitiveFileComparator()
 }
-</code></pre>
-
-和 Java 一样，枚举类提供方法来获取枚举类中实例的列表，以及通过名字获取枚举值的方法。
-
-<pre><code>
-EnumClass.valueOf(value: String): EnumClass
-EnumClass.values(): Array&lt;EnumClass&gt;
-</code></pre>
-
-要注意的是，如果 value 对应的枚举实例名字不存在，则会抛出运行时不须查异常 IllegalArgumentException。
-
-## 对象表达式和声明
-
-有的时候需要创建一个对象来对一个后续的类的实现进行修改，但因为只有一处会用到，且不大可能有代码重用的必要，因此不想为此创建一个新类，就可以使用对象表达式和对象声明。对象表达式最简形式甚至可以只有一行。
-
-<pre><code>
-val obj = object { val name: String = "Leo" } //这个对象在被定义的同时，被构造出来，同时赋值给了obj这个属性。
-</code></pre>
-
-### 对象声明
-
-<pre><code>
-
-object DataProviderManager {
-    fun registerDataProvider(provider: DataProvider) {
-        // ...
-    }
-    val allDataProviders: Collection&lt;DataProvider&gt;
-        get() = // ...
-}
-
-</code></pre>
-
-这种实现单实例的方法就是对象声明，object 后面必须有名字，像变量声明一样，对象声明不是一个表达式，因此不能作为赋值语句的表达式赋值给一个属性。应用和调用 DataProviderManager 的方法非常容易：
-
-<pre><code>
-
-DataProviderManager.registerDataProvider(...)
-
-</code></pre>
-
-且对象声明的实例可以继承或者实现接口：
-
-<pre><code>
-
-object DefaultListener : MouseAdapter() {
-    override fun mouseClicked(e: MouseEvent) {
-        // ...
-    }
-
-    override fun mouseEntered(e: MouseEvent) {
-        // ...
-    }
-}
-
-</code></pre>
+</code><pre>
 
 ### 伙伴对象
 
-对象可以声明在一个类的内部，作为伙伴对象，伙伴对象使用 companion 来定义。
+Kotlin的类不支持静态方法和属性，Kotlin语言中没有static这个关键，作为代替，Kotlin通过定义package-level方法和对象替代static属性和类中的静态成员。但是package-level级别的方法是不能访问类中的私有成员的。如果我们需要实现一个方法可以在不经过类初始化直接调用，但方法必须要访问类的私有成员时，可以使用object定义一个内部类实例，典型的例子是需要为一个类提供一个工厂方法通过调用类的私有函数对类进行一些必要的设置和做操。
+
+类内部定义的object对象可以使用companion关键字进行修饰，被这个关键字修饰的对象将可以有能力直接访问类实例内的方法和属性，而访问伙伴对象的方法时不需要通过伙伴对象的名字进行访问，直接通过对宿主对象进行调用就可以，例如：
 
 <pre><code>
 class MyClass {
+
+    private fun setupByInner() {}
+
     companion object Factory {
-        fun create(): MyClass = MyClass()
+        fun create(): MyClass { 
+            return MyClass().with { // with 是一个标准库函数，我们在后面会详细介绍它的使用
+                setupByInner()
+            }
+        }
     }
 }
-</code></pre>
 
-可以通过类名来访问伙伴对象。
-
-<pre><code>
-val instance = MyClass.create()
+val instance = MyClass.create() // 伙伴类的方法可以直接在宿主类上进行访问。
 </code></pre>
 
 伙伴类声明的时候可以不指定名字，这个时候，可以使用缺省的名字 Companion 来引用：
@@ -1553,6 +1480,59 @@ class MyClass {
         override fun create(): MyClass = MyClass()
     }
 }
+</code></pre>
+
+这里我们看一个例子，定义一个有两个构造函数类，然后将其改造为由伙伴对象提供的工厂方法访问类的私有构造方法创建实例。
+
+<pre><code>
+class User {
+    val name: String
+    constructor(email: String) {
+        name = email.substringBefore('@')
+    }
+    
+    constructot(accountId: String) {
+        this.name = getNameByAccountId(accountId)
+    }
+}
+</pre></code>
+
+上面的代码中，两个构造函数提供两种方式初始化User中的name属性，我们可以同样通过定义一个伙伴对象另其提供两个方法使用同一个构造函数创建这个对象。
+
+<pre><code>
+class User private constructor(val name: String) {
+    companion object {
+        fun newInstFromSubscribing(email: String) = User(email.substringBefore('@'))
+
+        fun newInstFromAccountId(accountId: String) = User(getNameByAccountId(accountId))
+    }
+}
+
+val subscribingUser = User.newInstFromSubscribing("leo****@gmail.com")
+val user = User.newInstFromAccountId("111")
+
+</code></pre>
+
+工厂方法非常实用，其名称可以描述构造方式和目的，设计模式中的抽象工厂方法
+
+### 伴生对象的扩展
+
+如果类中存在伴生对象，同样可以对其进行函数扩展和属性扩展。
+
+<pre><code>
+class MyClass {
+    companion object { } // will be called "Companion"
+}
+
+fun MyClass.Companion.foo() {
+    // ...
+}
+</code></pre>
+
+对伙伴对象的调用方式与普通类的函数和属性没有区别
+
+<pre><code>
+MyClass.foo()
 </code></pre>
 
 ### 对象表达式和生命的区别
@@ -1590,6 +1570,34 @@ fun tackAction(direction: Direction) {
 tackAction(Direction.WEST) //打印 WEST
 
 </code></pre>
+
+### 匿名类
+
+枚举类可以定义自己的匿名类，一般当一个内幕类定义了抽象函数要求每一个枚举类实例都实现的时候，可以在枚举类中定义抽象函数，例如：下面的例子实现一个非常简单的状态控制模型，每个状态都必须通过实现 signal 函数来指定下一个状态值。可以通过定义匿名类来为每一个状态提供 signal 的实现。
+
+<pre><code>
+enum class ProtocolState {
+    WAITING {
+        override fun signal() = TALKING
+    },
+
+    TALKING {
+        override fun signal() = WAITING
+    };
+
+    abstract fun signal(): ProtocolState
+}
+</code></pre>
+
+和 Java 一样，枚举类提供方法来获取枚举类中实例的列表，以及通过名字获取枚举值的方法。
+
+<pre><code>
+EnumClass.valueOf(value: String): EnumClass
+EnumClass.values(): Array&lt;EnumClass&gt;
+</code></pre>
+
+要注意的是，如果 value 对应的枚举实例名字不存在，则会抛出运行时不须查异常 IllegalArgumentException。
+
 
 ### 初始化
 因为枚举类型本身是一个类，因此，枚举类可以有构造函数和方法,唯一的区别是，枚举类的构造是发生在类体中：
