@@ -1337,6 +1337,9 @@ val demo = Outer().Inner().foo() // == 1
 
 ### object关键字
 
+Kotlin 通过对象声明的方式，极大的简化了单实例类的实现。比 Groovy 还简单。
+
+
 object的意义是梆定定义一个类和构造这个类的一个实例这两个动作，也就是object语法可以同时完成这两个功能。
 
 object使得我们可以更加简单的实现单例：
@@ -1359,9 +1362,55 @@ object关键字声明对象同样可以继承其他类或者声明实现接口�
 
 object与单例模式相同，不适合在大型复杂的项目中大量使用，因为复杂项目势必需要引入组件化架构，通过接口对组件间依赖进行解耦合从而实现项目的可扩展，功能可插拔，多团队并行开发等目的。而直接使用单例会将组件间的实现直接进行耦合，因为我们的代码中会出现依赖的组件的具体的类，而不是仅仅出现依赖组件对外提供的interface。例如，上面定义的Client是一个单例，我们要想调用其方法就必须通过类名后跟方法，通常在java代码中会出现Client.shareInstance().start()的代码，这样就造成我们直接在内部决定我们依赖Client这个类，无法通过不更改我们的代码的情况下，切换Client.start方法的具体实现，如果我们只有一处使用这个单例还好，倘若由不计其数的地方都访问这个Client又如何，最直接的后果就是，你的所有组件都必须同Client组件一起编译，一起共存，如果每个组件都通过单例对外暴露了自己的类呢，那我们的所有组件都必须依赖其它所有组件的存在才可以进行开发和编译，当我们团队增加到10人以上，各自维护一部分组件的时候，那个时候相信每天合并代码将会是一场噩梦，而且，单元测是永远都不可能进行，也不可能在运行时通过不同的配置文件进行设置。
 
-一种好的思想是依赖注入，依赖注入的概念是两个类的依赖关系或者类和接口的某个具体实现类的依赖关系，不由两个类之间来确定（通常指不由使用方决定），使用方将依赖关系的决定权交出，由外部类通过构造方法传参或者设置属性将依赖的类的实例注入到需要的对象中形成依赖反转，Spring framework框架核心的组件IOC（依赖反转容器）就是一个通用的依赖注入框架，同时Spring Framework自身的接口实现都是通过依赖注入交付到业务逻辑层的，而且IOC容器通过java的Proxcy动态代理机制，实现了lazy loading，我们从IOC容器得到的对象只是一个动态代理对象，而不是真正的我们需要的对象，当我们第一次调用对象的成员方法或者访问属性时，动态代理类才会去创建真正的类的实例。IOC通过lazy loading还使得我们免去了频繁调整对象构造顺序的问题。
+单实例是一个很有用的设计模式，但是，大部分项目都被工程师滥用了。之前遇到过一个情况就是，和一个工程师讨论了底层通信层的组建和组建间的接口，结果，最后发现，工程师确实定义了相应的接口文件，但是所有组建间的调用都是通过单例形式调用的，所有的接口都成为了摆设。
+
+一种好的思想是依赖注入，依赖注入的概念是两个类的依赖关系或者类和接口的某个具体实现类的依赖关系，不由两个类之间来确定（通常指不由使用方决定），使用方将依赖关系的决定权交出，由外部类通过构造方法传参或者设置属性将依赖的类的实例注入到需要的对象中形成依赖反转，Spring framework框架核心的组件IOC（依赖反转容器）就是一个通用的依赖注入框架，同时Spring Framework自身的接口实现都是通过依赖注入交付到业务逻辑层的，而且IOC容器通过java的Proxcy动态代理机制，实现了lazy loading，我们从IOC容器得到的对象只是一个动态代理对象，而不是真正的我们需要的对象，当我们第一次调用对象的成员方法或者访问属性时，动态代理类才会去创建真正的类的实例。IOC通过lazy loading还使得我们免去了频繁调整对象构造顺序的问题。做终端开发的时候，会更容易碰到这样的情况，例如，一个bug是因为一个单例被调用的太晚了，需要调整把这行代码搬到上面去，单例尤其是有状态的单例存在一个问题，当用户注销或者切换用户的时候，需要清空所有状态，这时如果我们没有为单例设计reset方法，则想支持状态重置就需要非常大的改动。
 
 使用IOC的一个好处在于使用IOC容器使得我们在编译时依赖最底层的接口进行编程，而在运行时，IOC容器会在最上层将各个模块的类的实例以底层接口的想时下发到各个组件完成整个程序组件间的组装，这是另一个依赖反转的理解，即编译时模块代码依赖底层接口编码，运行时相反依赖上层IOC注入接口实现。
+
+工程师对单例的态度，应该是会用这个设计模式，并且会选择在正确的地方来使用，而不是在所有的地方。
+
+
+### 对象表达式
+
+使用关键字 object 来创建一个对象来实现匿名类：
+
+<pre><code>
+window.addMouseListener(object : MouseAdapter() {
+    override fun mouseClicked(e: MouseEvent) {
+        // ...
+    }
+
+    override fun mouseEntered(e: MouseEvent) {
+        // ...
+    }
+})
+</code></pre>
+
+实现UI组建的事件回调是使用匿名类的最普遍的场景，因为每一个事件的回调，都是一个用户特定相互独立的交互，但是不推荐实现逻辑非常复杂的匿名类，可以把这样的匿名类当作 UI 事件与业务逻辑接口之间的桥接，或者“胶水”。例如，如果构造一个匿名类，实现了接受一条 JSON 数据并保存到数据库中，当另外一处事件同样需要做对相同数据格式的 JSON 数据进行持久化的时候，就无法重用之前的匿名类了，如果这个时候拷贝代码到新的匿名类中来解决这个问题，那就等于是给自己埋下了隐患，拷贝的次数越多，代码质量就会越差。
+
+也不要在匿名类中再实现新的匿名类，这样的作会很容易产生怪兽级的代码块，更多的缩进，更长的代码块。一个比较有代表性的 case，如果实现了一个网络层框架，支持异步发送数据，并通过回调来返回服务器的 respone，用户通过点击按钮来出发请求，返回的结果需要保存到数据库，这个时候，有很大的动机让开发人员写出匿名类中创建匿名类的设计，这样不好的是，把整个UI事件响应，数据串行化，反串行化，数据库持久和业务逻辑，全部 all in one 的实现在了一起，没有办法进行重用了。这样的设计最会引诱开发人员去简单粗暴地使用 copy 的方式，来克隆实现。即使知道应该怎么解决，也没有办法保证团队的其他人，不这么做。
+
+<pre><code>
+
+window.addMouseLinstener(object : MouseAdapter() {
+    override fun mouseClicked(e: MouseEvent) {
+        Network.post(object: Serialization(request: HttpRequest){
+            //将UI中的数据串行化到request中
+        }, object: OnSuccessed(response: HttpResponse){
+            //反串行化数据,保存数据库，实现业务逻辑。
+        })
+    }
+
+    override fun mouseEntered(e: MouseEvent) {
+        // ...
+    }
+})
+
+</code></pre>
+
+解决的办法是将匿名类中要做的事情，放到业务逻辑组建中，仅让匿名函数作为“胶水”来连接UI事件和处理逻辑的接口。
+
 
 ### 在java代码中使用Kotlin的object对象
 
@@ -1388,51 +1437,6 @@ window.addMouseListener(object: MouseAdapter() {
 
 <pre><code>
 val listener = ActionListener { println("clicked") }
-</code></pre>
-
-
-
-## 枚举类
-
-有的时候，一个类的某一写属性是有限个数的一组值，例如，定义一个属性代表方向，且仅有 NORTH, SOUTH, WEST, EAST 这4种值，而一个组建的背景色可能只能取RED, GREEN, BLUE。这个时候，可以定义枚举类来限定一个属性的值的范围，且可以通过初始化枚举类来给每个值设定一个可读的含义。
-
-<pre><code>
-enum class Direction {
-    NORTH, SOUTH, WEST, EAST
-}
-</code></pre>
-
-这样可以在类中，定义一个代表方向的属性，其类型为 Direction 类型。
-
-<pre><code>
-
-
-fun tackAction(direction: Direction) {
-    val defaultDirection = Direction.EAST
-    when (direction) {
-        Direction.NORTH -&gt; println(direction)
-        Direction.SOUTH -&gt; println(direction)
-        Direction.WEST -&gt; println(direction)
-        else -> { println(defaultDirection) }
-    }
-
-}
-
-tackAction(Direction.WEST) //打印 WEST
-
-</code></pre>
-
-### 初始化
-因为枚举类型本身是一个类，因此，枚举类可以有构造函数和方法,唯一的区别是，枚举类的构造是发生在类体中：
-
-<pre><code>
-enum class Color(val rgb: Int) {
-    RED(0xFF0000),
-    GREEN(0x00FF00),
-    BLUE(0x0000FF)
-}
-
-println(Color.RED) // 打印0xFF0000
 </code></pre>
 
 ### 匿名类
@@ -1470,64 +1474,7 @@ EnumClass.values(): Array&lt;EnumClass&gt;
 val obj = object { val name: String = "Leo" } //这个对象在被定义的同时，被构造出来，同时赋值给了obj这个属性。
 </code></pre>
 
-### 对象表达式
-
-使用关键字 object 来创建一个对象来实现匿名类：
-
-<pre><code>
-window.addMouseListener(object : MouseAdapter() {
-    override fun mouseClicked(e: MouseEvent) {
-        // ...
-    }
-
-    override fun mouseEntered(e: MouseEvent) {
-        // ...
-    }
-})
-</code></pre>
-
-实现 UI 组建的事件回调是使用匿名类的最普遍的场景，因为每一个事件的回调，都是一个用户特定相互独立的交互，但是不推荐实现逻辑非常复杂的匿名类，可以把这样的匿名类当作 UI 事件与业务逻辑接口之间的桥接，或者“胶水”。例如，如果构造一个匿名类，实现了接受一条 JSON 数据并保存到数据库中，当另外一处事件同样需要做对相同数据格式的 JSON 数据进行持久化的时候，就无法重用之前的匿名类了，如果这个时候 copy 代码到新的匿名类中来解决这个问题，那就等于是给自己埋下了隐患，copy 的次数越多，代码质量就会越差。
-
-同时，也不要在匿名类中再实现新的匿名类，这样的行为会很容易产生怪兽级的代码块，更多的缩进，更长的代码块。一个比较有代表性的 case，如果实现了一个网络层框架，支持异步发送数据，并通过回调来返回服务器的 respone，用户通过点击按钮来出发请求，返回的结果需要保存到数据库，这个时候，有很大的动机让开发人员写出匿名类中创建匿名类的设计，这样不好的是，把整个UI事件响应，数据串行化，反串行化，数据库持久和业务逻辑，全部 all in one 的实现在了一起，没有办法进行重用了。这样的设计最会引诱开发人员去简单粗暴地使用 copy 的方式，来克隆实现。即使知道应该怎么解决，也没有办法保证团队的其他人，不这么做。
-
-<pre><code>
-
-window.addMouseLinstener(object : MouseAdapter() {
-    override fun mouseClicked(e: MouseEvent) {
-        Network.post(object: Serialization(request: HttpRequest){
-            //将UI中的数据串行化到request中
-        }, object: OnSuccessed(response: HttpResponse){
-            //反串行化数据,保存数据库，实现业务逻辑。
-        })
-    }
-
-    override fun mouseEntered(e: MouseEvent) {
-        // ...
-    }
-})
-
-</code></pre>
-
-解决的办法是将匿名类中要做的事情，放到业务逻辑组建中，仅让匿名函数作为“胶水”来连接UI事件和处理逻辑的接口。
-
-一个很像 JavaScript 的特性是可以仅构造一个对象并在构造的同时定义它。也就是对象不一定非要有一个父类。早期的 JavaScript 定义一个对象，实际上就是先构造一个空对象实例，然后再在这个实例上添加这个对象的属性和函数，也就是虽然是面向对象的，但是没有 class。
-
-<pre><code>
-fun foo() {
-    val adHoc = object {
-        var x: Int = 0
-        var y: Int = 0
-    }
-
-    print(adHoc.x + adHoc.y)
-}
-</code></pre>
-
 ### 对象声明
-
-有的时候，需要构造一个单实例对象，单实例的含义是，保证一个类在当前进程中仅被构造一次，即仅只有一个实例。单实例可以简化获得一个实例的方式，且不用去维护它的生命周期，反正它一直在那里，直到进程被销毁。
-
-Kotlin 通过对象声明的方式，极大的简化了单实例类的实现。比 Groovy 还简单。
 
 <pre><code>
 
@@ -1564,16 +1511,6 @@ object DefaultListener : MouseAdapter() {
 }
 
 </code></pre>
-
-单实例是一个很有用的设计模式，但是，大部分项目都被工程师滥用了。之前遇到过一个情况就是，和一个工程师讨论了底层通信层的组建和组建间的接口，结果，最后发现，工程师确实定义了相应的接口文件，但是所有组建间的调用都是通过单例形式调用的，所有的接口都成为了摆设。
-
-使用单例的好处是，一些 service 级别的接口，是公共的需要一直存在，保存一些状态，以及接口的实例。但是，不推荐单例中的方法直接访问其他单例，这个是非常不好的行为，因为，单例调用与单例代表，两个逻辑之间的关系是在编写代码的时候被确定的，不可能通过运行时的具体情况再去调整去选择其他的实现了，这个时候，可能就要开始写很多的 when 和 if 语句了才能解决问题。
-
-单例被滥用的另外一个副作用是，很多时候，组件之间的声明周期是有依赖关系的，一个组建能正常工作是依赖另外一个组建先构造。构造的工作就应该在构造函数中完成，但是单例可能会让本该保证存在的组件被延后构造，有可能会丢失一些状态。例如，一个单例中需要监听系统事件，但是，并没有在应用启动的时候，就构造它，而是等具体的地方第一次调用单例的时候，这个单实例才被创建出来，且永不释放。这个时候，实际上对系统事件的监听就被延后了，而不是在开始的组建构造阶段。因此一部分被监听的事件就可能被漏掉了。
-
-做终端开发的时候，会更容易碰到这样的情况，例如，一个 bug 是因为一个单例被调用的太晚了，好把，我们把这行代码搬到上面去吧。我们现在要实现帐号切换了，ok，我们加个切换帐号的函数吧。不好，怎么上一个用户的名字会出现在新的用户界面中。
-
-工程师对单例的态度，应该是会用这个设计模式，并且会选择在正确的地方来使用，而不是在所有的地方。
 
 ### 伙伴对象
 
@@ -1623,6 +1560,50 @@ class MyClass {
 - 对象表达式在使用的地方会被立即执行，就是定义的地方。
 - 对象声明是懒加载的，只有在第一次应用的时候被初始化。
 - 伙伴对象初始化发生在宿主类被加载，相当于 Java 中的静态初始化。
+
+## 枚举类
+
+有的时候，一个类的某一写属性是有限个数的一组值，例如，定义一个属性代表方向，且仅有 NORTH, SOUTH, WEST, EAST 这4种值，而一个组建的背景色可能只能取RED, GREEN, BLUE。这个时候，可以定义枚举类来限定一个属性的值的范围，且可以通过初始化枚举类来给每个值设定一个可读的含义。
+
+<pre><code>
+enum class Direction {
+    NORTH, SOUTH, WEST, EAST
+}
+</code></pre>
+
+这样可以在类中，定义一个代表方向的属性，其类型为 Direction 类型。
+
+<pre><code>
+
+
+fun tackAction(direction: Direction) {
+    val defaultDirection = Direction.EAST
+    when (direction) {
+        Direction.NORTH -&gt; println(direction)
+        Direction.SOUTH -&gt; println(direction)
+        Direction.WEST -&gt; println(direction)
+        else -> { println(defaultDirection) }
+    }
+
+}
+
+tackAction(Direction.WEST) //打印 WEST
+
+</code></pre>
+
+### 初始化
+因为枚举类型本身是一个类，因此，枚举类可以有构造函数和方法,唯一的区别是，枚举类的构造是发生在类体中：
+
+<pre><code>
+enum class Color(val rgb: Int) {
+    RED(0xFF0000),
+    GREEN(0x00FF00),
+    BLUE(0x0000FF)
+}
+
+println(Color.RED) // 打印0xFF0000
+</code></pre>
+
 
 ## 代理 （Delegation）
 
