@@ -1513,7 +1513,63 @@ val user = User.newInstFromAccountId("111")
 
 </code></pre>
 
-工厂方法非常实用，其名称可以描述构造方式和目的，设计模式中的抽象工厂方法
+工厂方法非常实用，其名称可以描述构造方式和目的，我们还可以让伙伴对象构造这个类的子类来实现设计模式用的抽象工厂模式。伙伴对象唯一的限制时无法被子类覆盖，因此如果需要调整工厂方法构造对象的行为，就只能通过修改这个伙伴对象的代码，而无法通过子类重载来实现。
+
+伙伴对象除了不能被重载之外，其它方面与普通的对象没有任何区别，伙伴对象可以有自己的名字，可以声明实现某个接口，方法和属性，同样也可以对其进行函数扩展和属性扩展。
+
+例如我们需要从服务器请求一个数据，需要实现使用JSON格式将一个Data Class类序列化和泛序列化从而可以与服务器进行通信和数据交换，可以把序列化的逻辑放到这个实体类的伙伴对象中进行。
+
+<pre><code>
+class User(val name: String) {
+    companion object Parser {
+        fun decodeFromJson(content: String): User = ...
+    }
+}
+
+val user = User.Parser.decodeFromJson("{name: 'leo'}")
+println(user.name) // 结果输出 leo
+</code></pre>
+
+这里也可以省略伙伴对象的名字，直接通过对宿主类调用伙伴类的方法即可。
+
+<pre><code>
+val user = User.decodeFromJson("{name: 'leo'}")
+println(user.name) // 结果输出 leo
+</code></pre>
+
+而如果我们定义一个没有名字的伙伴对象则编译器会使用却生的名字Companion对其命名，后面在介绍伙伴对象扩展的时候，会再次见到这个名字。
+
+### 伙伴对象实现接口
+
+伙伴对象同样可以声明实现某个接口（可以时多个），例如同样已对象穿行化Json字符串为例，如果我们有一个通用框架将服务器发送来的Json字符串反解析成数据实体供我们的业务组件使用。要想实现这个目标，框架层必须定义一个通用的反串行化接口。
+
+<pre><code>
+interface JsonDecoder&lt;T&gt; {
+    fun decode(content: String): T
+}
+</code></pre>
+
+之所以要定义这个接口是因为，要想实现一个通用的框架负责将服务器发送来的Json字符串反解析成数据实体供我们的业务组件使用，就需要这个通用框架面向抽象编程，框架并不知道到底有哪几种数据实体类需要反解析，因此从通用组件的视角来看它仅有服务器传送过来的一个数据,以及这个数据格式的类别，因此通用框架的代码仅仅针对JsonDecoder这个抽象接口进行编码，即在我们的通用组件中，只有JsonDecoder，而没有User类，但是我们可以通过将服务器告知的数据的类别与对性的JsonDecoder的具体实现进行映射，同样将User的Json String数据反串行化成User对象并调用业务逻辑处理类进行接收。
+
+<pre><code>
+class User(val name: String) {
+    companion object : JsonDecoder&lt;User&gt; {
+        override fun decode(content: String): User = ...
+    }
+}
+
+</code></pre>
+
+这样我们可以在框架中提供一个注册机制从而建立这个映射关系。
+
+<pre><code>
+class MessageIncomingProcesser {
+    val decoders: Map&lt;String: JsonDecoder&gt; = mutableMapOf()
+    fun registerDecoder(category: String, decoder: JsonDecoder) {
+        decoders[category] = decoder
+    }
+}
+</code></pre>
 
 ### 伴生对象的扩展
 
