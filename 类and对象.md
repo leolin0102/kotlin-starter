@@ -1541,35 +1541,53 @@ println(user.name) // 结果输出 leo
 
 ### 伙伴对象实现接口
 
-伙伴对象同样可以声明实现某个接口（可以时多个），例如同样已对象穿行化Json字符串为例，如果我们有一个通用框架将服务器发送来的Json字符串反解析成数据实体供我们的业务组件使用。要想实现这个目标，框架层必须定义一个通用的反串行化接口。
+伙伴对象同样可以声明实现某个接口（可以时多个），例如同样已对象穿行化Json字符串为例，如果我们有一个通用框架实现将业务中的数据实体对象通过串行化成JSON格式的字符串发送给服务器。框架的任务是维护一个消息发送队列，并使用当读的线程不断的从队列中获取发送的数据并通过网络请求发送出去。框架需要针对抽象层编程而不是User，因为我们不只由User这一种数据类。因此，我们定义框架的责任是维护发送线程，从队列取出实体对象，并从对象中得到要发送的字符串进行传输。要想做到这点，框架就必须定义一个接口由外部实现来帮助框架得到实体对象的串行化后的结果。
 
 <pre><code>
-interface JsonDecoder&lt;T&gt; {
-    fun decode(content: String): T
+interface JsonEncoder {
+    fun encode(): String
 }
+
+class MessageSender {
+    val sendMessages = mutablListOf()
+
+    fun send(encoder: JsonEncoder) {
+        sendMessages.add(encoder)
+    }
+
+    fun getMessagePayload(encoder: JsonEncoder): String {
+        return encoder.encode()
+    }
+}
+
 </code></pre>
 
-之所以要定义这个接口是因为，要想实现一个通用的框架负责将服务器发送来的Json字符串反解析成数据实体供我们的业务组件使用，就需要这个通用框架面向抽象编程，框架并不知道到底有哪几种数据实体类需要反解析，因此从通用组件的视角来看它仅有服务器传送过来的一个数据,以及这个数据格式的类别，因此通用框架的代码仅仅针对JsonDecoder这个抽象接口进行编码，即在我们的通用组件中，只有JsonDecoder，而没有User类，但是我们可以通过将服务器告知的数据的类别与对性的JsonDecoder的具体实现进行映射，同样将User的Json String数据反串行化成User对象并调用业务逻辑处理类进行接收。
+这样框架就可以针对抽象层进行编码，即框架仅仅需要维护一个保存JsonEncoder类型的列表，发送线程不断的从列表中取出JsonEncoder的实现，调用encode的方法得到发送的内容。这样只要是实现了JsonEncoder接口的任何类，都可以放入发送队列中，不仅仅只是User这一种类，这里可以让User类的伙伴对象来完成这个任务。
 
 <pre><code>
 class User(val name: String) {
-    companion object : JsonDecoder&lt;User&gt; {
-        override fun decode(content: String): User = ...
+    companion object : JsonEncoder {
+        override fun encode(): String = ...
     }
 }
 
+val sender = MessageSender()
+val user = User("Leo")
+sender.send(user)
 </code></pre>
 
-这样我们可以在框架中提供一个注册机制从而建立这个映射关系。
+至此我们今后开发的任何数据类只要实现JsonEncoder这个接口，就都可以通过通用框架完成与远程服务器的数据交换。
 
-<pre><code>
-class MessageIncomingProcesser {
-    val decoders: Map&lt;String: JsonDecoder&gt; = mutableMapOf()
-    fun registerDecoder(category: String, decoder: JsonDecoder) {
-        decoders[category] = decoder
-    }
-}
-</code></pre>
+### Kotlin的伙伴对象与java的静态成员
+
+伙伴对象与普通对象接近，只是编译器编译时会自动为伙伴对象生成一个静态字段引用伙伴对象，如果定义的伙伴对象没有名字，却生的名字就是Companion，java代码可以通过这个名字访问这个伙伴对象。
+
+/* Java */
+User.Companion.fromJson("....")
+
+如果伙伴对象由名字，则直接使用其名字代替Companion。
+
+有的时候需要
 
 ### 伴生对象的扩展
 
