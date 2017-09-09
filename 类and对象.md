@@ -1587,13 +1587,14 @@ User.Companion.fromJson("....")
 
 如果伙伴对象由名字，则直接使用其名字代替Companion。
 
-有的时候需要
+有的时候需要与Java代码共同工作，当第三方的Java库中的类需要我们的Kotlin提供静态成员变量或者方法时，可以通过在我们的Kotlin代码中增加@JvmStatic注解来告诉编译器，将这个成员编译成静态成员，使用@JvmField告诉编译器将top-level属性或者类属性编译成静态字段。
 
 ### 伴生对象的扩展
 
 如果类中存在伴生对象，同样可以对其进行函数扩展和属性扩展。
 
 <pre><code>
+
 class MyClass {
     companion object { } // will be called "Companion"
 }
