@@ -1589,9 +1589,9 @@ User.Companion.fromJson("....")
 
 有的时候需要与Java代码共同工作，当第三方的Java库中的类需要我们的Kotlin提供静态成员变量或者方法时，可以通过在我们的Kotlin代码中增加@JvmStatic注解来告诉编译器，将这个成员编译成静态成员，使用@JvmField告诉编译器将top-level属性或者类属性编译成静态字段。
 
-### 伴生对象的扩展
+### 伙伴对象的函数扩展
 
-如果类中存在伴生对象，同样可以对其进行函数扩展和属性扩展。
+之间介绍过函数扩展可以定义方法使得其可以在被扩展类的实例上调用，如果想定义一个方法使其可以直接在被扩展的类上直接被调用，怎可以通过扩展伙伴对象的方式实现，效果与伙伴对象的成员方法以及java的静态方法一样。
 
 <pre><code>
 
@@ -1610,11 +1610,68 @@ fun MyClass.Companion.foo() {
 MyClass.foo()
 </code></pre>
 
+拿上面的User实体为例，如果想得到一个干净的数据是体对象的定义而不想包含对象串行化的逻辑在其中，则可以使用伙伴函数扩展的方式。
+
+<pre><code>
+class User(val name: String) {
+    companion object {}
+}
+
+fun User.Companion.fromJson(json: String) {
+    return ... //将json字符串解析成User实例
+}
+</code></pre>
+
+这样就可以直接对User类调用fromJson方法将传入的json格式的数据解析成新的User实体并返回。因为使用方法扩展的方式实现，因此fromJson方法的代码可以与User相互隔离无需混杂在一起。这里我们必须为User提供类提供一个伙伴对象，哪怕是一个空对象好让外部对其进行扩展。
+
 ### 对象表达式和生命的区别
 
+object不仅仅可以被用于构造单例，也可以用来构造匿名对象，匿名对象用来代替java的内部匿名类，例如，一个java的MouserAdapter接口的kotlin实现：
+
+<pre><code>
+window.addMouseListaner(
+    object: MouseAdapter() {
+        override fun mouseClicked(e: MouseEvent) {
+
+        }
+
+        override fun mouseEntered(e: MouseEvent) {
+
+        } 
+    }
+)
+</code></pre>
+
+上面的代码完成的工作是定义一个MouseAdapter的匿名类同时创建这个类的实例，大部分时是不需要给对象一个名字的，因为这样的代码往往很轻且没有代码重用的需求，但如果有这个必要，怎可以通过将对象赋值给一个变量进行保存。
+
+<pre><code>
+val mouseAdapter = object : MouseAdapter() {
+    override fun mouseClicked(e: MouseEvent) {}
+    override fun mouseEntered(e: MouseEvent) {}
+}
+</code></pre>
+
+同java不同的是，java的匿名内部类只能继承自一个类或者实现一个接口，但是Kotlin中的object可以声明并创建一个对象同时实现多个接口或者0个接口。匿名object与有命名的object不同，前者并不是单实例，因此每次声明匿名object的代码被执行，都会创建出一个新的实例。
+
+与java匿名类相同的是，匿名object可以访问创建这个对象的方法内的任何字段，与java不同的是，匿名object可以更改方法内的字段的值。
+
+<pre><code>
+fun countMouseClicked(window: Window) {
+    var clickCount = 0
+    window.addMouseListener(object: MouseAdapter() {
+        override mouseClicked(e: MouseEvent) {
+            clickCount++
+        }
+    })
+}
+</code></pre>
+
+下面是对象表达式的几个提点：
 - 对象表达式在使用的地方会被立即执行，就是定义的地方。
 - 对象声明是懒加载的，只有在第一次应用的时候被初始化。
 - 伙伴对象初始化发生在宿主类被加载，相当于 Java 中的静态初始化。
+
+注意：对象表达式通常在我们需要匿名实现的接口定义了多个方法的时候。如果要匿名实现的接口仅仅只有一个方法需要被实现（Runnable接口），则可以是用Kotlin所特有的SAM机制来实现，这种一个接口只定义一个方法称之为基本接口。
 
 ## 枚举类
 
@@ -1646,7 +1703,7 @@ tackAction(Direction.WEST) //打印 WEST
 
 </code></pre>
 
-### 匿名类
+### 匿名枚举类
 
 枚举类可以定义自己的匿名类，一般当一个内幕类定义了抽象函数要求每一个枚举类实例都实现的时候，可以在枚举类中定义抽象函数，例如：下面的例子实现一个非常简单的状态控制模型，每个状态都必须通过实现 signal 函数来指定下一个状态值。可以通过定义匿名类来为每一个状态提供 signal 的实现。
 
@@ -1692,7 +1749,7 @@ println(Color.RED) // 打印0xFF0000
 
 ### 代理类
 
-代理模式是一种更灵活的替代继承的代码重用，因为代理模式可以实现多继承，也可以在运行时改变被代理的接口的实现，来动态调整代理类的行为。
+代理模式是一种更灵活的替代继承的代码重用，因为代理模式可以实现多继承，也可以在运行时改变被代理的接口的实现，来动态调整代理类的行为，因此Kotlin从语法层引入了关键字by来定义这个类的代理类，从而简化了代理模式的实现。
 
 <pre><code>
 
@@ -1872,5 +1929,3 @@ class C {
 </code></pre>
 
 编译器生成的代码，显示生成一个 prop$delegate 的属性来保存代理类，然后实现属性 prop 的 get/set 方法。 方法自动传入 this 对象，属性所在的类的实例，和属性本身。 this::prop 的语法从 Kotlin 1.1 开始提供。“::”依附于 this 对象，后跟 prop 实际上是 get 方法，实际上可以理解为一个绑定了 this 对象的函数，可以被传递和调用，在后面介绍 Higher order Function 的时候，会详细介绍。
-
-## 面向接口编程（POP）
