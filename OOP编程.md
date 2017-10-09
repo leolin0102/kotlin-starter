@@ -62,7 +62,6 @@ Kotlin语言默认所有方法和属性不可以被重载的目的就是确保�
 
 抽象工厂以及依赖反转容器（IOC）都是精心设计的可以辅助我们完成两个依赖反转原则的好帮手。这里不得不说Spring Framework中的核心组建IOC，是一个历史悠久且非常强大的IOC容器，当然IOC容器不止Spring Framework有，我之前也使用ObjectC语言开发了IOC容器帮助IOS的项目实现组建化和接口注入工作。
 
-
 ## 领域驱动设计 （DDD）
 
 领域驱动模型是一种通过对特定领域知识进行抽象建模，并开发专门的引擎驱动模型实现需求的方式。通过关注特定的领域从而确定需要解决的问题的边界，我们可以对其建模。建模的过程就是对领域中的需求进行抽象从而提炼出名词实体以及术语，使得我们可以不断的使用有限的名词实体和术语的组合出产出无尽的表达能力丰富灵活的业务模型。
@@ -133,8 +132,8 @@ fun Int makeBooking(cargo: Cargo, voyage: Voyage): Int {
 
 我们可以改变一下设计来更好的捕获这个知识，我们将超订这个概念定义为一个策略。策略（policy）其实就是设计模式中的策略模式（Strategy）。
 
-<img src="./images/ddd_overbooking_policy.png">
-
+<img src="./images/ddd_overbooking_policy.png">     
+ 
 <pre><code>
 fun makeBooking(cargo: Cargo, voyage: Voyage, policy: OverbookingPolicy) {
     if (!policy.isallowed(cargo, voyage)) return -1
@@ -148,5 +147,6 @@ fun makeBooking(cargo: Cargo, voyage: Voyage, policy: OverbookingPolicy) {
 
 现在所有人都清楚超订是一个独特的策略，而且超订规则的实现即明确而又独立。而UML图则充分的从面相对象设计的角度表达了我们的想法。
 
-### 状态机模型
+### 业务流程模型 （BPM）
 
+业务流程模型是一种经过抽象的用于描述流程类业务的专有领域模型，通过定义通用的流程描述模型，BPM将流程抽象为
