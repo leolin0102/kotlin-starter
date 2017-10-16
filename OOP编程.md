@@ -147,6 +147,6 @@ fun makeBooking(cargo: Cargo, voyage: Voyage, policy: OverbookingPolicy) {
 
 现在所有人都清楚超订是一个独特的策略，而且超订规则的实现即明确而又独立。而UML图则充分的从面相对象设计的角度表达了我们的想法。
 
-### 业务流程模型 （BPM）
+### 业务流程模型 （Business Processing Model）
 
-业务流程模型是一种经过抽象的用于描述流程类业务的专有领域模型，通过定义通用的流程描述模型，BPM将流程抽象为
+业务流程模型是一种经过抽象的用于描述流程类业务的领域模型，模型定义
