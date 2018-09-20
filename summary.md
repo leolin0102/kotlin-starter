@@ -9,7 +9,7 @@ FProject
 
 Experience in bytedance
 
-Lark
+
 I join to Lark team as architect. I developed the first version messages synchronization engine for Lark app, this engine help us manage the websocket connection, data transfer channel, and working threads. Then we decided use Rust language to develop an new engine which can be used in both android, iOS and PC(JS) client, I discussed with the whole team member many times, finally we have the solution that we can use 60 man days to finished this task.
 
 
