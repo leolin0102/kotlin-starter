@@ -17,7 +17,7 @@ Lark team is a new team, Lark is also a new app, I spend lots of time to transfe
 
 FProject
 
-I join this team as iOS leader, our target is to develop a new app, zero to one. But I have a big problem at the begining, we  sent three offers for iOS developer but finally no one join us, so I am the only iOS developer in FProject, at the same time we have 5 android engineers. I feel a really huge pressure to me, because I am not only to be a leader, I am the iOS team. How to use my time on study all requirements, coding, discuss we 6 production manager, 4 QA member. 
+I join this team as iOS leader, our target is to develop a new app, zero to one. But I have a big problem at the begining, we  sent three offers for iOS developer but finally no one join us, so I am the only iOS developer in FProject, at the same time we have 5 android engineers. I feel a really huge pressure to me, because I am not only to be a member of iOS team, I am the iOS team. How to use my time on study all requirements, coding, discuss we 6 production manager, 4 QA member. 
 
 Then we have two new iOS developer join to our team recently, other problem is how to make them warm up at the begining, and make us working as team. I talk with them and make one on one talk so that we know our goal and how to achieved it.
 
