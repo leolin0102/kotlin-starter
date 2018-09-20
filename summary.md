@@ -10,9 +10,15 @@ FProject
 Experience in bytedance
 
 Lark
+I join to Lark team as architect. I developed the first version messages synchronization engine for Lark app, this engine help us manage the websocket connection, data transfer channel, and working threads. Then we decided use Rust language to develop an new engine which can be used in both android, iOS and PC(JS) client, I discussed with the whole team member many times, finally we have the solution that we can use 60 man days to finished this task.
 
 
+Lark team is a new team, Lark is also a new app, I spend lots of time to transfer my knowledge, the experience of UML design, the principle of the OOP design，functional programing, FRP (Functional Reactive Programing), Domain-Driven Design to the team member. The team members have changed and they spend more time for think how to make their code mode flexible， more easy to be testign, and easy to be reused.
 
 FProject
 
-I join this team as iOS leader, our target is to develop a new app, zero to one. 
+I join this team as iOS leader, our target is to develop a new app, zero to one. But I have a big problem at the begining, we  sent three offers for iOS developer but finally no one join us, so I am the only iOS developer in FProject, at the same time we have 5 android engineers. I feel a really huge pressure to me, because I am not only to be a leader, I am the iOS team. How to use my time on study all requirements, coding, discuss we 6 production manager, 4 QA member. 
+
+Then we have two new iOS developer join to our team recently, other problem is how to make them warm up at the begining, and make us working as team. I talk with them and make one on one talk so that we know our goal and how to achieved it.
+
+Finally we finished and release our first version to iOS market.
