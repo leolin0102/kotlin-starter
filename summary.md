@@ -13,7 +13,7 @@ Experience in bytedance
 I join to Lark team as architect. I developed the first version messages synchronization engine for Lark app, this engine help us manage the websocket connection, data transfer channel, and working threads. Then we decided use Rust language to develop an new engine which can be used in both android, iOS and PC(JS) client, I discussed with the whole team member many times, finally we have the solution that we can use 60 man days to finished this task.
 
 
-Lark team is a new team, Lark is also a new app, I spend lots of time to transfer my knowledge, the experience of UML design, the principle of the OOP design，functional programing, FRP (Functional Reactive Programing), Domain-Driven Design to the team member. The team members have changed and they spend more time for think how to make their code mode flexible， more easy to be testign, and easy to be reused.
+Lark team is a new team, Lark is also a new app, I spend lots of time to transfer my knowledge, the experience of UML design, the principle of the OOP design，functional programing, FRP (Functional Reactive Programing), Domain-Driven Design to the team member. The team members have changed and they start to spend more time of thinking how to make their code mode flexible， more easy to be testign, and easy to be reused.
 
 FProject
 
