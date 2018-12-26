@@ -1,18 +1,24 @@
 IBM CRL
 加入盘古项目组，担任JAVA高级开发工程师，基于IBM SOA产品为用户提供企业级分布式解决方案，使用WebSphere WPS作为应用服务器，基于SCA框架将用户需求以组建的形式进行开发，使用BPEL引擎实现业务流程建模，并驱动业务组件工作。并使用ESB消息服务实现多服务的消息通信，从而降低服务间的耦合并提高分布式部署的灵活性。使用Lucence搜索引擎实现检索服务降低数据库的负担，实现简单的数据聚合和检索功能。
 
+I join in the PanGu project as Java Senior Development Engineer, our project use WebSphere WPS as the appliction server, the WPS is an SOA solution which contain Enterprise Service Bus(ESB), BPEL BPM Engine and Service Component Architecture (SCA), we working business export use BPEL to define the business process model, use BEM as the engine which can drive and integrate lots of components which managed by SCA, so that they can working together to finished the whole job. Finally we use ESB to help us reduce the coupling between the service, then we can deploy the services as the component into different server, this can provide a heigh extensibility to the whole system. we also try to use the lucence to build up searching service in order to reduce the load of DB2.
+
 GOOD 
 作为Java工程师，负责J2ME应用的研发实现push email应用，通过Socket连接与服务器进行实时的数据同步，井用户的邮件数据通过加密方式同步到终端。09年开始学习和研究android研发，在HTC第一台设备上市的同时，用一周的时间为公司提供了第一个Android平台的客户端Demo，并最终与3位同时共同开发完成了第一个版本的Android客户端。2010年开始加入公司iOS组，负责iOS版本产品的研发，并参与解决由于iOS平台支持后台运行后带来的稳定性问题。
+
+I join Good company as j2ME developer, we develop a push Email client which use socket connection to sync email data from server to client, then I started develop our first android app demo at the end of 2009, I use 7 days to finished the demo and show it to boss in the US, so company decided let me started to develop the android app and hope we develop the first android app to customer as soon as possible because our customer already start use HTC G1. After we released the android app to market, then my boss hope I can transfer to develop the iOS version because he beileved that I can take over the new task. so I traveled to headquarters in USA and working with our iOS team for several month.
 
 阿莫多
 2012年离开GOOD加入阿莫多公司，使用python搭建爬虫系统收集LBS信息，并使用Elasticsearch实现LBS数据的搜索和推荐功能为用户提供实时的停车场车位信息。使用MongoDB实现数据的聚合计算，为停车场提供数据检索及报表服务。并使用Erlang语言开发客户端通过4G无线网络同步停车场数据到服务端完成数据获取。
 
+In this project I use python to develop a web crawler to collect the LBS data of parking lot, we put the data into Elasticsearch server to provide LBS base searching service. Using Erlang language develop arm client connect to parking lot system and send to server through 4G network, I also develop the Map/Reduce script which runing on mongoDB to suppor data aggregate service to our customer.
 
 与同事共同讨论和搭建推荐系统，通过建立小区分组，从而实现房屋信息的数据去重和信息的辩真工作。参与推荐系统模型参数的制定和优化，使用SVMRank模型实现房源信息的个性化推荐。
 负责第一个版本的iOS客户端的开发，并负责面试和组建iOS团队。
 
 bytedance 工作经历
 
+In F team we make lots of attempts on how to build up a Recommended Search System 
 
 
 Lark
